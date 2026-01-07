@@ -64,6 +64,8 @@ class LabelOptionsReleasability(LabelOptions):
     # if any choices are set, origin must be present
     # (default releasability added to all events where releasibility is allowed.)
     origin: str = ""
+    # alternate name for default releasability
+    origin_alt_name: str = ""
     # prefix that is present in all entries for 'releasability'
     prefix: str = "REL:"
 
@@ -128,7 +130,6 @@ class Settings(BaseSettings):
 
     def __init__(self):
         super().__init__()
-
         # possible labels for the exclusive security field
         self._exclusive = frozenset(self.labels.classification.get_all_names() + self.labels.caveat.get_all_names())
         # possible labels for the inclusive security field
@@ -195,6 +196,8 @@ class Settings(BaseSettings):
         # Convert to frozen sets.
         self._classifications_that_allow_rels = frozenset(_classifications_that_allow_rels)
         self._classifications_that_allow_tlps = frozenset(_classifications_that_allow_tlps)
+
+        self._origin_alt_name = self.labels.releasability.origin_alt_name
 
     @property
     def inclusive(self) -> frozenset[str]:

@@ -50,6 +50,7 @@ def max_security_strings(
     # combine security dicts
     try:
         sec = _get_sec().string_combine(secs)
+        print("AM RETURNING SEC ", sec)
     except exceptions.SecurityParseException as e:
         raise HTTPException(status_code=400, detail=f"invalid security strings or combination: {str(e)}")
     # return security string
