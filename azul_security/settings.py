@@ -65,7 +65,7 @@ class LabelOptionsReleasability(LabelOptions):
     # (default releasability added to all events where releasibility is allowed.)
     origin: str = ""
     # alternate name for default releasability
-    origin_alt_name = ""
+    origin_alt_name: str = ""
     # prefix that is present in all entries for 'releasability'
     prefix: str = "REL:"
 
