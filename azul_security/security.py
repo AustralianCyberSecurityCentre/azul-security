@@ -272,9 +272,9 @@ class Security:
         if (
             len(ret.labels_inclusive) == 1
             and ret.labels_inclusive == self._s.labels.releasability.origin
-            and self._s._origin_alt_name
+            and self._s.labels.releasability.origin_alt_name
         ):
-            ret.labels_inclusive = self._s._origin_alt_name
+            ret.labels_inclusive = self._s.labels.releasability.origin_alt_name
         return ret
 
     @cachetools.cachedmethod(lambda self: self._cache_enforceable_markings, key=lambda _self, m: "-".join(sorted(m)))
