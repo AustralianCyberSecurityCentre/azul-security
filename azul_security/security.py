@@ -238,8 +238,7 @@ class Security:
         if not includelist:
             includelist = []
         ret = UserSecurity()
-        # TODO check if user rel includes origin then do this. If not don'to_securityt
-        # also, add origin_abbhreviation to values.yaml and show that if user only selected origin in filter.
+        
         labels += [item for item in includelist if item not in labels]
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
