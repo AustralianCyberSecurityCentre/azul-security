@@ -267,7 +267,7 @@ class Security:
                 to_securityt(ret.labels_exclusive, ret.labels_inclusive, ret.labels_markings), ignore_origin=True
             )
         )
-       
+
         ret.allowed_presets = self._get_allowed_presets(labels)
 
         if (
@@ -275,7 +275,9 @@ class Security:
             and ret.labels_inclusive == self._s.labels.releasability.origin
             and self._s.labels.releasability.origin_alt_name
         ):
-            updated_max_access = re.sub(r"REL:[^ ]*", f"REL:{self._s.labels.releasability.origin_alt_name}", ret.max_access)
+            updated_max_access = re.sub(
+                r"REL:[^ ]*", f"REL:{self._s.labels.releasability.origin_alt_name}", ret.max_access
+            )
             # Update ret.max_access
             ret.max_access = updated_max_access
         return ret
