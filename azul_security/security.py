@@ -238,7 +238,7 @@ class Security:
         if not includelist:
             includelist = []
         ret = UserSecurity()
-        
+
         labels += [item for item in includelist if item not in labels]
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
