@@ -230,7 +230,7 @@ class Security:
         return [x for x in ret if x is not None]
 
     def summarise_user_access(
-        self, labels: list[str], denylist: list[str] = None, includelist: list[str] = None, sec_filter: str = None
+        self, labels: list[str], denylist: list[str] = None, includelist: list[str] = None
     ) -> UserSecurity:
         """Summarise the users access into a simple data structure."""
         if not denylist:
@@ -239,7 +239,7 @@ class Security:
             includelist = []
         ret = UserSecurity()
 
-        labels += [item for item in includelist if item not in labels]
+        labels += [item for item in self._s.labels.releasability.get_all_names() if item not in labels]
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
         missing = self.minimum_required_access.difference(labels)
