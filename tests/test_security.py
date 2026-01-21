@@ -616,4 +616,4 @@ class TestAnalog(unittest.TestCase):
                 "TLP:GREEN",
             ],
         )
-        self.assertEqual(ret.max_access, "TOP HIGH REL:AGAO")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")

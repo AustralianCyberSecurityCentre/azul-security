@@ -40,7 +40,7 @@ def resetEnv():
             "releasability": {
                 "title": "Groups",
                 "origin": "REL:APPLE",
-                "origin_alt_name": "AGAO",
+                "origin_alt_name": "APPLEO",
                 "prefix": "REL:",
                 "options": [
                     {"name": "REL:APPLE", "priority": "0"},
