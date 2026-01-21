@@ -241,9 +241,7 @@ class Security:
         if self._s.labels.releasability.origin not in labels:
             labels.append(self._s.labels.releasability.origin)
         else:
-            print("Adding to labels ", self._s.labels.releasability.get_all_names())
             labels += [item for item in self._s.labels.releasability.get_all_names() if item not in labels]
-            print("labels are now ", labels)
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
         missing = self.minimum_required_access.difference(labels)
@@ -272,10 +270,7 @@ class Security:
         )
 
         ret.allowed_presets = self._get_allowed_presets(labels)
-        print("Ret inclusive size ", len(ret.labels_inclusive))
-        if len(ret.labels_inclusive) > 0:
-            print(" first element ", ret.labels_inclusive[0])
-        print(" origin nick name ", self._s.labels.releasability.origin_alt_name)
+       
         if (
             len(ret.labels_inclusive) == 1
             and ret.labels_inclusive[0] == self._s.labels.releasability.origin
