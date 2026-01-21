@@ -192,7 +192,7 @@ class TestRestapi(unittest.TestCase):
                         ],
                         "title": "Groups",
                         "origin": "REL:APPLE",
-                        "origin_alt_name": "",
+                        "origin_alt_name": "AGAO",
                         "prefix": "REL:",
                     },
                     "tlp": {
