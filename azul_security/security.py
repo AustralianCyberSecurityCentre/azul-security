@@ -238,7 +238,7 @@ class Security:
         if not includelist:
             includelist = []
         ret = UserSecurity()
-        if self._s.labels.releasability.origin not in labels:
+        if self._s.labels.releasability.origin and self._s.labels.releasability.origin not in labels:
             labels.append(self._s.labels.releasability.origin)
         else:
             labels += [item for item in self._s.labels.releasability.get_all_names() if item not in labels]
