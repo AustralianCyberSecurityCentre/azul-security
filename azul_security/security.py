@@ -270,7 +270,7 @@ class Security:
         )
 
         ret.allowed_presets = self._get_allowed_presets(labels)
-       
+
         if (
             len(ret.labels_inclusive) == 1
             and ret.labels_inclusive[0] == self._s.labels.releasability.origin
