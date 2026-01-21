@@ -482,28 +482,28 @@ class TestAnalog(unittest.TestCase):
         """Verify a user with high access with RELs can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["TOP HIGH", "REL:APPLE"])
         print(ret)
-        self.assertEqual(ret.labels, ["REL:APPLE", "TOP HIGH"])
+        self.assertEqual(ret.labels, ["REL:APPLE", "REL:BEE", "REL:CAR", "TOP HIGH"])
 
-        self.assertEqual(ret.labels_inclusive, ["REL:APPLE"])
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:BEE", "REL:CAR"])
         self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
         self.assertEqual(ret.labels_markings, [])
 
-        self.assertEqual(ret.unique, "458fa7e061b9c0b4c47e1ada9523ad59")
-        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE")
+        self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
     def test_summarise_user_access_with_rels_no_origin(self):
         """Verify a user with high access with RELs that aren't he origin can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["HIGH", "REL:CAR"])
         print(ret)
-        self.assertEqual(ret.labels, ["HIGH", "REL:CAR"])
+        self.assertEqual(ret.labels, ["HIGH", "REL:APPLE", "REL:CAR"])
 
-        self.assertEqual(ret.labels_inclusive, ["REL:CAR"])
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:CAR"])
         self.assertEqual(ret.labels_exclusive, ["HIGH"])
         self.assertEqual(ret.labels_markings, [])
 
-        self.assertEqual(ret.unique, "89d3810c1d9aca1ec7734233bc0268e3")
-        self.assertEqual(ret.max_access, "HIGH REL:CAR")
+        self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
+        self.assertEqual(ret.max_access, "HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["HIGH"])
 
     def test_get_enforceable_tlps(self):
@@ -589,3 +589,31 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual("TOP HIGH REL:APPLE,CAR", self.sec.string_normalise("TOP HIGH REL:APPLE REL:CAR"))
         self.assertEqual("TOP HIGH", self.sec.string_normalise("TOP HIGH TLP:GREEN"))
         self.assertEqual("TOP HIGH REL:APPLE", self.sec.string_normalise("TOP HIGH REL:APPLE TLP:CLEAR TLP:GREEN"))
+
+    def test_rel_origin_abb_name(self):
+        """Check whether origin rel nickname is shown when only REL present is origin"""
+        ret = self.sec.summarise_user_access(
+            [
+                "LOW",
+                "LOW: LY",
+                "MEDIUM",
+                "HIGH",
+                "TOP HIGH",
+                "REL:APPLE",
+                "REL:BEE",
+                "REL:CAR",
+                "TLP:AMBER",
+                "TLP:AMBER+STRICT",
+                "TLP:CLEAR",
+                "TLP:GREEN",
+            ],
+            denylist=[
+                "REL:BEE",
+                "REL:CAR",
+                "TLP:AMBER",
+                "TLP:AMBER+STRICT",
+                "TLP:CLEAR",
+                "TLP:GREEN",
+            ],
+        )
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")

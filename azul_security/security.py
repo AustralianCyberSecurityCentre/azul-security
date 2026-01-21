@@ -9,6 +9,7 @@ Security Dict - security labels organised to split into 3 categories of 'inclusi
 """
 
 import hashlib
+import re
 from typing import Iterable
 
 import cachetools
@@ -228,12 +229,19 @@ class Security:
             raise SecurityParseException(f"unmatched unsafe->safe in {labels}")
         return [x for x in ret if x is not None]
 
-    def summarise_user_access(self, labels: list[str], denylist: list[str] = None) -> UserSecurity:
+    def summarise_user_access(
+        self, labels: list[str], denylist: list[str] = None, includelist: list[str] = None
+    ) -> UserSecurity:
         """Summarise the users access into a simple data structure."""
         if not denylist:
             denylist = []
+        if not includelist:
+            includelist = []
         ret = UserSecurity()
-
+        if self._s.labels.releasability.origin and self._s.labels.releasability.origin not in labels:
+            labels.append(self._s.labels.releasability.origin)
+        else:
+            labels += [item for item in self._s.labels.releasability.get_all_names() if item not in labels]
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
         missing = self.minimum_required_access.difference(labels)
@@ -241,7 +249,6 @@ class Security:
             raise SecurityAccessException(
                 f"user does not meet minimum_required_access, missing security labels {list(missing)}"
             )
-
         # remove security labels in the denylist
         labels = set(labels).difference(set(x.upper() for x in denylist))
         exclusive_labels = sorted(self._s.exclusive.intersection(labels))
@@ -255,7 +262,6 @@ class Security:
         ret.labels_exclusive = exclusive_labels
         ret.labels_inclusive = sorted(self._s.inclusive.intersection(labels))
         ret.labels_markings = sorted(self._s.markings.intersection(labels))
-
         ret.unique = self._access_calc_unique(labels)
         ret.max_access = self._friendly.from_labels(
             self._friendly.normalise(
@@ -264,6 +270,17 @@ class Security:
         )
 
         ret.allowed_presets = self._get_allowed_presets(labels)
+
+        if (
+            len(ret.labels_inclusive) == 1
+            and ret.labels_inclusive[0] == self._s.labels.releasability.origin
+            and self._s.labels.releasability.origin_alt_name
+        ):
+            updated_max_access = re.sub(
+                r"REL:[^ ]*", f"REL:{self._s.labels.releasability.origin_alt_name}", ret.max_access
+            )
+            # Update ret.max_access
+            ret.max_access = updated_max_access
         return ret
 
     @cachetools.cachedmethod(lambda self: self._cache_enforceable_markings, key=lambda _self, m: "-".join(sorted(m)))
