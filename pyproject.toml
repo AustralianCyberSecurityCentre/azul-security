@@ -33,6 +33,9 @@ dependencies = [
 [project.scripts]
 azul-security = "azul_security.display_settings:cli"
 
+[project.entry-points."azul_restapi.plugin"]
+security = "azul_security.restapi:router"
+
 [project.urls]
 Documentation = "https://australiancybersecuritycentre.github.io/azul/"
 Repository = "https://github.com/AustralianCyberSecurityCentre/azul-security"
