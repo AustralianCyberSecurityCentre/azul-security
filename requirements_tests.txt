@@ -1,5 +1,0 @@
-cart
-fastapi[all]>=0.60.0
-pytest
-tox
-azul_bedrock

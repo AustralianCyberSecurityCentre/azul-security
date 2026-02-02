@@ -30,7 +30,7 @@ def normalise_security(security: str = Body("", embed=True)):
     try:
         sec = _get_sec().string_normalise(security)
     except exceptions.SecurityParseException as e:
-        raise HTTPException(status_code=400, detail=f"invalid security strings: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"invalid security strings: {str(e)}") from None
     return sec
 
 
@@ -51,7 +51,7 @@ def max_security_strings(
     try:
         sec = _get_sec().string_combine(secs)
     except exceptions.SecurityParseException as e:
-        raise HTTPException(status_code=400, detail=f"invalid security strings or combination: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"invalid security strings or combination: {str(e)}") from None
     # return security string
     if not sec:
         raise HTTPException(status_code=400, detail="empty result")
@@ -68,5 +68,5 @@ async def is_user_admin_api(request: Request) -> bool:
     try:
         user_info = request.state.user_info
     except AttributeError:
-        raise HTTPException(status_code=500, detail="user_info is not available on request.state")
+        raise HTTPException(status_code=500, detail="user_info is not available on request.state") from None
     return admin.is_user_admin(user_info)

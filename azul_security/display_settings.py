@@ -11,10 +11,12 @@ def cli():
     pass
 
 
-@cli.command(help="""
+@cli.command(
+    help="""
 Display all of the Opensearch roles that need to be created for Azul's current security
 configuration to work with Opensearch.
-""")
+"""
+)
 def show_opensearch_roles():
     """Console command to display the roles that need to be created in Opensearch."""
     set = settings.Settings()
@@ -28,10 +30,12 @@ def show_opensearch_roles():
     click.echo(result)
 
 
-@cli.command(help="""
+@cli.command(
+    help="""
 Display the mappings from the azul security configuration and how they map
 to/from the opensearch roles that need to be created.
-""")
+"""
+)
 @click.option(
     "--is-unsafe-to-safe", is_flag=True, default=False, help="Print unsafe to safe rather than safe to unsafe."
 )

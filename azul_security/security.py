@@ -167,6 +167,7 @@ class Security:
         Args:
             permitted_labels: Security labels for the of the user or entity wanting to view an object.
             protected_object_permission: Security string of the object the user wants to view.
+            raise_error: Raise an error on failed access rather than a boolean return value.
 
         Returns:
             bool indicating if user can view object
