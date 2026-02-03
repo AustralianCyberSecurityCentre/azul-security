@@ -1,3 +1,0 @@
-cachetools
-pydantic>2
-pydantic-settings>2

@@ -9,7 +9,6 @@ from . import support
 
 
 class TestAdmin(unittest.TestCase):
-
     @classmethod
     def alter_environment(cls):
         support.resetEnv()

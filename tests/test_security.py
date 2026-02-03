@@ -261,7 +261,6 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret, ["s-low", "s-low--ly", "s-rel-apple"])
 
     def test_summarise_user_access_large(self):
-
         ret = self.sec.summarise_user_access(
             [
                 "MOD2",
@@ -324,7 +323,6 @@ class TestAnalog(unittest.TestCase):
         )
 
     def test_summarise_user_access_large2(self):
-
         ret = self.sec.summarise_user_access(
             [
                 "MOD2",

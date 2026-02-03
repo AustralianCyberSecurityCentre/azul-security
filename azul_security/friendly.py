@@ -198,7 +198,7 @@ class SecurityFriendly:
         try:
             ret = self.normalise(to_securityt(exc, inc, oth))
         except SecurityParseException as e:
-            raise SecurityParseException(f"{str(e)}: {raw=}")
+            raise SecurityParseException(f"{str(e)}: {raw=}") from None
 
         return ret
 
