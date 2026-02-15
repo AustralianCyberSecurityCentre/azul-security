@@ -2,7 +2,7 @@ import json
 import os
 import unittest
 
-from azul_security import exceptions
+from azul_bedrock import exceptions_security
 from azul_security import security as se
 from azul_security.friendly import to_securityt
 
@@ -42,7 +42,7 @@ class TestBasic(unittest.TestCase):
         self.assertEqual("MEDIUM REL:APPLE", self.sec.string_combine(items))
 
         items = ["MEDIUM REL:APPLE", "MEDIUM REL:CAR"]
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_combine, items)
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_combine, items)
 
         items = [
             "LOW TLP:GREEN",
@@ -159,9 +159,9 @@ class TestBasic(unittest.TestCase):
             self.sec.string_normalise("high REL:APPLE MOD2 MOD3 REL:BEE REL:CAR"),
         )
 
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "MODERATOR")
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "HIGHREL:APPLE")
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "HIGHTLP:GREEN")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "MODERATOR")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "HIGHREL:APPLE")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "HIGHTLP:GREEN")
 
         self.assertEqual("HIGH REL:APPLE", self.sec.string_normalise("high///REL:APPLE"))
         self.assertEqual(
@@ -173,7 +173,7 @@ class TestBasic(unittest.TestCase):
             self.sec.string_normalise("HIGH///REL:APPLE REL:BEE\\REL:CAR"),
         )
 
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "INVALIDognregtro")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "INVALIDognregtro")
 
         # test rel
         self.assertEqual(
@@ -221,7 +221,7 @@ class TestBasic(unittest.TestCase):
 
         obj_perm = "REL:CAR MEDIUM"
 
-        self.assertRaises(exceptions.SecurityParseException, self.sec.check_access, *(user_perm, obj_perm))
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.check_access, *(user_perm, obj_perm))
 
         # Vary the exclusive groups
         obj_perm = "REL:APPLE REL:BEE REL:CAR HIGH"
@@ -235,7 +235,7 @@ class TestBasic(unittest.TestCase):
         self.assertTrue(self.sec.check_access(user_perm, obj_perm))
 
         obj_perm = "REL:CAR MEDIUM"
-        self.assertRaises(exceptions.SecurityParseException, self.sec.check_access, *(user_perm, obj_perm))
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.check_access, *(user_perm, obj_perm))
 
         # Check Enforceable marking
         obj_perm = "LOW TLP:CLEAR"
@@ -255,7 +255,9 @@ class TestBasic(unittest.TestCase):
         obj_perm = "REL:APPLE REL:BEE MEDIUM"
 
         # check does raise
-        self.assertRaises(exceptions.SecurityAccessException, self.sec.check_access, *(user_perm, obj_perm, True))
+        self.assertRaises(
+            exceptions_security.SecurityAccessException, self.sec.check_access, *(user_perm, obj_perm, True)
+        )
 
     def test_get_allowed_presets(self):
         self.assertEqual(

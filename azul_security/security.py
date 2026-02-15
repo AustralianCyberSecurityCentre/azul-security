@@ -13,14 +13,15 @@ import re
 from typing import Iterable
 
 import cachetools
-from azul_bedrock.models_restapi.basic import UserSecurity
-
-from . import friendly, settings
-from .exceptions import (
+from azul_bedrock.exception_enums import ExceptionCodeEnum
+from azul_bedrock.exceptions_security import (
     SecurityAccessException,
     SecurityConfigException,
     SecurityParseException,
 )
+from azul_bedrock.models_restapi.basic import UserSecurity
+
+from . import friendly, settings
 from .friendly import SecurityT, to_securityt
 
 EXCLUSIVE = "exclusive"
@@ -53,12 +54,17 @@ class Security:
         for x in self.minimum_required_access:
             if x not in s.exclusive and x not in s.inclusive:
                 raise SecurityConfigException(
-                    f"minimum required access level ({x}) not found in inclusive or exclusive sets"
+                    ref=f"minimum required access level ({x}) not found in inclusive or exclusive sets",
+                    internal=ExceptionCodeEnum.SecurityMinRequiredAccessNotFound,
+                    parameters={"security_label": x},
                 )
 
         # normalise default security
         if not s.default:
-            raise SecurityConfigException("must set security_default to valid security option")
+            raise SecurityConfigException(
+                ref="must set security_default to valid security option",
+                internal=ExceptionCodeEnum.SecuritySecurityDefaultNotSet,
+            )
         s.default = self.string_normalise(s.default)
 
     def get_labels_allowed(self) -> frozenset[str]:
@@ -133,7 +139,11 @@ class Security:
         inc = set.intersection(*inc_groups) if inc_groups else set()
         if inc_groups and not inc:
             # Occurs when two sets for the group have no common items - i.e. nobody can view the document
-            raise SecurityParseException(f"no common inclusive set: {inc}")
+            raise SecurityParseException(
+                ref=f"no common inclusive set: {inc}",
+                internal=ExceptionCodeEnum.SecurityNoCommonSecurityUnviewable,
+                parameters={"inclusive": inc},
+            )
 
         normalised = self._friendly.normalise(to_securityt(exc, inc, oth))
         return self._friendly.from_labels(normalised)
@@ -177,20 +187,33 @@ class Security:
         # check if user has all exclusive labels
         if not sec.exclusive.issubset(permitted):
             if raise_error:
+                exclusive_difference = ",".join(sec.exclusive.difference(permitted))
                 raise SecurityAccessException(
-                    f"User cannot access all {','.join(sec.exclusive.difference(permitted))}"
+                    ref=f"User cannot access all {exclusive_difference}",
+                    internal=ExceptionCodeEnum.SecurityUserCannotAccessExclusive,
+                    parameters={"exclusive_difference": exclusive_difference},
                 )
             return False
         # check if user has at least one inclusive labels
         if sec.inclusive and not sec.inclusive.intersection(permitted):
             if raise_error:
-                raise SecurityAccessException(f"User cannot access any {','.join(sec.inclusive)}")
+                inclusive_difference = ",".join(sec.inclusive)
+                raise SecurityAccessException(
+                    ref=f"User cannot access any {inclusive_difference}",
+                    internal=ExceptionCodeEnum.SecurityUserCannotAccessInclusive,
+                    parameters={"inclusive_difference": inclusive_difference},
+                )
             return False
         # Check if user has at least one TLP marking
         objects_enforceable_markings = set(self.get_enforceable_markings(sec.markings))
         if objects_enforceable_markings and not objects_enforceable_markings.intersection(permitted):
             if raise_error:
-                raise SecurityAccessException(f"User cannot access any {','.join(sec.inclusive)}")
+                markings_difference = ",".join(sec.markings)
+                raise SecurityAccessException(
+                    ref=f"User cannot access any {markings_difference}",
+                    internal=ExceptionCodeEnum.SecurityUserCannotAccessMarkings,
+                    parameters={"markings_difference": markings_difference},
+                )
             return False
         return True
 
@@ -215,7 +238,11 @@ class Security:
         """
         ret = [self._s.safe_to_unsafe.get(x) for x in labels]
         if not drop_mismatch and None in ret:
-            raise SecurityParseException(f"unmatched safe->unsafe in {labels}")
+            raise SecurityParseException(
+                ref=f"unmatched safe->unsafe in {labels}",
+                internal=ExceptionCodeEnum.SecurityUnmatchedLabelsGoingSafeToUnsafe,
+                parameters={"labels": labels},
+            )
         return [x for x in ret if x is not None]
 
     def unsafe_to_safe(self, labels: list[str], drop_mismatch: bool = False) -> list[str]:
@@ -227,7 +254,11 @@ class Security:
         """
         ret = [self._s.unsafe_to_safe.get(x) for x in labels]
         if not drop_mismatch and None in ret:
-            raise SecurityParseException(f"unmatched unsafe->safe in {labels}")
+            raise SecurityParseException(
+                ref=f"unmatched unsafe->safe in {labels}",
+                internal=ExceptionCodeEnum.SecurityUnmatchedLabelsGoingUnsafeToSafe,
+                parameters={"labels": labels},
+            )
         return [x for x in ret if x is not None]
 
     def summarise_user_access(
@@ -247,8 +278,11 @@ class Security:
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
         missing = self.minimum_required_access.difference(labels)
         if missing:
+            missing_labels = str(list(missing))
             raise SecurityAccessException(
-                f"user does not meet minimum_required_access, missing security labels {list(missing)}"
+                ref=f"user does not meet minimum_required_access, missing security labels {missing_labels}",
+                internal=ExceptionCodeEnum.SecurityUserDoesNotHaveMinimumAccess,
+                parameters={"missing_labels": missing_labels},
             )
         # remove security labels in the denylist
         labels = set(labels).difference(set(x.upper() for x in denylist))

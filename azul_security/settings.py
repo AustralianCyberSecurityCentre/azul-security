@@ -3,10 +3,12 @@
 import re
 from functools import cached_property
 
+from azul_bedrock.exception_enums import ExceptionCodeEnum
+from azul_bedrock.exceptions_security import (
+    SecurityConfigException,
+)
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-from .exceptions import SecurityConfigException
 
 
 def security_to_role(label: str) -> str:
@@ -30,7 +32,11 @@ class LabelOption(BaseModel):
         super().__init__(*args, **kwargs)
         self.name = self.name.upper()
         if self.name.startswith(" ") or self.name.endswith(" "):
-            raise SecurityConfigException(f"security labels must not start or end with a space: '{self.name}'")
+            raise SecurityConfigException(
+                ref=f"security labels must not start or end with a space: '{self.name}'",
+                internal=ExceptionCodeEnum.SecurityConfigLabelsWithExtraSpaces,
+                parameters={"raw_label_name": self.name},
+            )
 
     name: str
     # Priority of this security label (higher is more important)
@@ -137,7 +143,9 @@ class Settings(BaseSettings):
         for x in self.labels.releasability.get_all_names():
             if not x.startswith(self.labels.releasability.prefix):
                 raise SecurityConfigException(
-                    f"All security group labels must be prefixed with '{self.labels.releasability.prefix}'"
+                    ref=f"All security group labels must be prefixed with '{self.labels.releasability.prefix}'",
+                    internal=ExceptionCodeEnum.SecurityConfigReleasabilitiesMissingRequiredPrefix,
+                    parameters={"releasability_prefix": self.labels.releasability.prefix},
                 )
 
         # extra allowed security settings
@@ -157,11 +165,19 @@ class Settings(BaseSettings):
         if len(self._allowed) < len(summed):
             for x in self._allowed:
                 summed.remove(x)
-            raise SecurityConfigException(f"a security label has been defined twice: {summed}")
+            raise SecurityConfigException(
+                ref=f"a security label has been defined twice: {summed}",
+                internal=ExceptionCodeEnum.SecurityConfigLabelDefinedTwice,
+                parameters={"summed": summed},
+            )
 
         for label in self.labels.releasability.get_all_names():
             if " " in label:
-                raise SecurityConfigException(f"group labels must not have spaces: '{label}'")
+                raise SecurityConfigException(
+                    ref=f"group labels must not have spaces: '{label}'",
+                    internal=ExceptionCodeEnum.SecurityConfigGroupLabelMustNotHaveSpaces,
+                    parameters={"label": label},
+                )
 
         # generate 'safe' security labels that are compatible with opensearch role names
         self._unsafe_to_safe = {}
@@ -170,7 +186,11 @@ class Settings(BaseSettings):
             safe_label = security_to_role(label)
             self._unsafe_to_safe[label] = safe_label
             if safe_label in self._safe_to_unsafe:
-                raise SecurityConfigException(f"two labels were made safe to the same value: {safe_label}")
+                raise SecurityConfigException(
+                    ref=f"two labels were made safe to the same value: {safe_label}",
+                    internal=ExceptionCodeEnum.SecurityConfigMultipleValuesMappedToSameValue,
+                    parameters={"safe_label": safe_label},
+                )
             self._safe_to_unsafe[safe_label] = label
 
         # normalise minimum required access

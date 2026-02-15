@@ -2,7 +2,7 @@ import json
 import os
 import unittest
 
-from azul_security import exceptions
+from azul_bedrock import exceptions_security
 from azul_security import security as se
 
 from . import support
@@ -15,11 +15,11 @@ class TestInvalids(unittest.TestCase):
     def test_bad_minimum_required_access(self):
         # non existent label
         os.environ["security_minimum_required_access"] = json.dumps(["JUB"])
-        self.assertRaises(exceptions.SecurityConfigException, se.Security)
+        self.assertRaises(exceptions_security.SecurityConfigException, se.Security)
 
         # marking in security_minimum_required_access
         os.environ["security_minimum_required_access"] = json.dumps(["rouge", "jam"])
-        self.assertRaises(exceptions.SecurityConfigException, se.Security)
+        self.assertRaises(exceptions_security.SecurityConfigException, se.Security)
 
     def test_dupe_labels(self):
         os.environ["security_minimum_required_access"] = json.dumps([])
@@ -69,7 +69,7 @@ class TestInvalids(unittest.TestCase):
             }
         )
 
-        self.assertRaises(exceptions.SecurityConfigException, se.Security)
+        self.assertRaises(exceptions_security.SecurityConfigException, se.Security)
         os.environ["security_allow_releasability_priority_gte"] = "30"
         os.environ["security_labels"] = json.dumps(
             {
@@ -113,13 +113,13 @@ class TestInvalids(unittest.TestCase):
                 },
             }
         )
-        self.assertRaises(exceptions.SecurityConfigException, se.Security)
+        self.assertRaises(exceptions_security.SecurityConfigException, se.Security)
 
     def test_bad_rel_tlp_presets(self):
         os.environ["security_presets"] = json.dumps(["TOP HIGH REL:APPLE TLP:CLEAR"])
         se.Security()  # Shouldn't raise an exception
         os.environ["security_presets"] = json.dumps(["LOW REL:APPLE"])
-        self.assertRaises(exceptions.SecurityParseException, se.Security)
+        self.assertRaises(exceptions_security.SecurityParseException, se.Security)
 
 
 class TestAnalog(unittest.TestCase):
@@ -168,7 +168,7 @@ class TestAnalog(unittest.TestCase):
             "REL:BEE",
             "REL:CAR",
         ]
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_combine, items)
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_combine, items)
         items = [
             "MEDIUM REL:APPLE",
             "MEDIUM REL:APPLE,BEE",
@@ -194,7 +194,7 @@ class TestAnalog(unittest.TestCase):
             "MEDIUM REL:APPLE,BEE",
             self.sec.string_normalise("MEDIUM REL:APPLE,BEE"),
         )
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "REL:BEE,CAR")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "REL:BEE,CAR")
 
     def test_exclusive(self):
         items = [
@@ -237,7 +237,7 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret, ["LOW", "LOW: LY", "REL:APPLE"])
 
         self.assertRaises(
-            exceptions.SecurityParseException,
+            exceptions_security.SecurityParseException,
             self.sec.safe_to_unsafe,
             ["s-low", "s-low--ly", "s-rel-apple", "blah"],
             drop_mismatch=False,
@@ -251,7 +251,7 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret, ["s-low", "s-low--ly", "s-rel-apple"])
 
         self.assertRaises(
-            exceptions.SecurityParseException,
+            exceptions_security.SecurityParseException,
             self.sec.unsafe_to_safe,
             ["LOW", "LOW: LY", "REL:APPLE", "BLAH"],
             drop_mismatch=False,
@@ -576,9 +576,11 @@ class TestAnalog(unittest.TestCase):
 
     def test_bad_security_rels_tlps(self):
         """Check good and bad TLP/REL with their corresponding inclusive/exclusive partners."""
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "LOW REL:APPLE")
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "LOW REL:CAR TLP:CLEAR")
-        self.assertRaises(exceptions.SecurityParseException, self.sec.string_normalise, "TLP:CLEAR")
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "LOW REL:APPLE")
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.sec.string_normalise, "LOW REL:CAR TLP:CLEAR"
+        )
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "TLP:CLEAR")
         self.assertEqual("LOW TLP:CLEAR", self.sec.string_normalise("LOW TLP:CLEAR"))
         self.assertEqual("LOW TLP:GREEN", self.sec.string_normalise("LOW TLP:CLEAR TLP:GREEN"))
         self.assertEqual("MEDIUM REL:APPLE,CAR", self.sec.string_normalise("MEDIUM REL:APPLE REL:CAR"))
