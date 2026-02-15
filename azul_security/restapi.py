@@ -2,9 +2,11 @@
 
 import functools
 
-from fastapi import APIRouter, Body, HTTPException, Request
+from azul_bedrock import exceptions_bedrock, exceptions_security
+from azul_bedrock.exception_enums import ExceptionCodeEnum
+from fastapi import APIRouter, Body, Request
 
-from azul_security import admin, exceptions, security, settings
+from azul_security import admin, security, settings
 
 router = APIRouter()
 
@@ -29,8 +31,13 @@ def normalise_security(security: str = Body("", embed=True)):
     """
     try:
         sec = _get_sec().string_normalise(security)
-    except exceptions.SecurityParseException as e:
-        raise HTTPException(status_code=400, detail=f"invalid security strings: {str(e)}") from None
+    except exceptions_security.SecurityParseException as e:
+        raise exceptions_bedrock.ApiException(
+            status_code=400,
+            ref=f"invalid security strings: {str(e)}",
+            internal=ExceptionCodeEnum.SecurityNormaliseInvalidSecurity,
+            parameters={"inner_exception": str(e)},
+        ) from None
     return sec
 
 
@@ -50,11 +57,18 @@ def max_security_strings(
     # combine security dicts
     try:
         sec = _get_sec().string_combine(secs)
-    except exceptions.SecurityParseException as e:
-        raise HTTPException(status_code=400, detail=f"invalid security strings or combination: {str(e)}") from None
+    except exceptions_security.SecurityParseException as e:
+        raise exceptions_bedrock.ApiException(
+            status_code=400,
+            ref=f"invalid security strings or combination: {str(e)}",
+            internal=ExceptionCodeEnum.SecurityInvalidMaxSecurity,
+            parameters={"inner_exception": str(e)},
+        ) from None
     # return security string
     if not sec:
-        raise HTTPException(status_code=400, detail="empty result")
+        raise exceptions_bedrock.ApiException(
+            status_code=400, ref="empty result", internal=ExceptionCodeEnum.SecurityEmptyResultForMaxSecurity
+        )
     return sec
 
 
@@ -68,5 +82,9 @@ async def is_user_admin_api(request: Request) -> bool:
     try:
         user_info = request.state.user_info
     except AttributeError:
-        raise HTTPException(status_code=500, detail="user_info is not available on request.state") from None
+        raise exceptions_bedrock.ApiException(
+            status_code=500,
+            ref="user_info is not available on request.state",
+            internal=ExceptionCodeEnum.SecurityUserInfoCannotBeAcquired,
+        ) from None
     return admin.is_user_admin(user_info)

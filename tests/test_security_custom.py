@@ -2,7 +2,6 @@ import json
 import os
 import unittest
 
-from azul_security import exceptions
 from azul_security import security as se
 from azul_security import settings
 

@@ -1,6 +1,7 @@
 import unittest
 
-from azul_security import exceptions, friendly, settings
+from azul_security import friendly, settings
+from azul_bedrock import exceptions_security
 from azul_security.friendly import SecurityT, to_securityt
 
 from . import support
@@ -27,7 +28,7 @@ class TestInvalids(unittest.TestCase):
         self.assertEqual(self.fr.normalise(item), to_securityt({"HIGH"}, {"REL:APPLE", "REL:BEE", "REL:CAR"}, {}))
 
         item = to_securityt({"LOW"}, {"REL:APPLE", "REL:BEE", "REL:CAR"}, {"TLP:CLEAR", "TLP:AMBER"})
-        self.assertRaises(exceptions.SecurityParseException, self.fr.normalise, item)
+        self.assertRaises(exceptions_security.SecurityParseException, self.fr.normalise, item)
 
         item = to_securityt({"LOW"}, {}, {"TLP:CLEAR", "TLP:AMBER"})
         self.assertEqual(self.fr.normalise(item), to_securityt({"LOW"}, {}, {"TLP:AMBER"}))
@@ -97,9 +98,11 @@ class TestInvalids(unittest.TestCase):
             ({"TOP HIGH", "MOD2"}, {"REL:APPLE", "REL:BEE"}, set()), self.fr.to_labels("TOP HIGH/MOD2 REL:APPLE,BEE")
         )
 
-        self.assertRaises(exceptions.SecurityParseException, self.fr.to_labels, "HIGH/MOD2 REL:APPLE,BEE turbo")
-        self.assertRaises(exceptions.SecurityParseException, self.fr.to_labels, "PENGUIN")
-        self.assertRaises(exceptions.SecurityParseException, self.fr.to_labels, "REL:CARL")
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.fr.to_labels, "HIGH/MOD2 REL:APPLE,BEE turbo"
+        )
+        self.assertRaises(exceptions_security.SecurityParseException, self.fr.to_labels, "PENGUIN")
+        self.assertRaises(exceptions_security.SecurityParseException, self.fr.to_labels, "REL:CARL")
 
     def test_from_labels(self):
         self.assertEqual("HIGH", self.fr.from_labels(to_securityt({"HIGH"}, {}, {})))
@@ -132,5 +135,9 @@ class TestInvalids(unittest.TestCase):
             self.fr.from_labels(to_securityt({"MOD2", "TOP HIGH"}, {"REL:BEE", "REL:APPLE"}, {})),
         )
 
-        self.assertRaises(exceptions.SecurityParseException, self.fr.from_labels, to_securityt({"PENGUIN"}, {}, {}))
-        self.assertRaises(exceptions.SecurityParseException, self.fr.from_labels, to_securityt({}, {"REL:CARL"}, {}))
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.fr.from_labels, to_securityt({"PENGUIN"}, {}, {})
+        )
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.fr.from_labels, to_securityt({}, {"REL:CARL"}, {})
+        )
