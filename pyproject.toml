@@ -24,6 +24,7 @@ classifiers=[
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
+    "azul-bedrock>=10.0.32",
     "cachetools>=7.0.0",
     "pydantic>2",
     "pydantic-settings>2",
@@ -39,9 +40,6 @@ security = "azul_security.restapi:router"
 Documentation = "https://australiancybersecuritycentre.github.io/azul/"
 Repository = "https://github.com/AustralianCyberSecurityCentre/azul-security"
 
-[[tool.uv.index]]
-url = "https://pypi.org/simple"
-default = true
 
 [tool.hatch.version]
 source = "vcs"
@@ -54,7 +52,6 @@ version = "0.0.0"
 
 [dependency-groups]
 dev = [
-    "azul-bedrock>=9.0.32",
     "cart>=1.2.3",
     "fastapi[all]>=0.60.0",
     "pytest>=9.0.2",
