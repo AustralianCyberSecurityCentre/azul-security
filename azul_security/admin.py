@@ -13,7 +13,7 @@ def _get_settings():
     return Settings()
 
 
-def is_admin_roles(roles: str) -> bool:
+def is_admin_roles(roles: list[str]) -> bool:
     """Verify if the list of provided roles contains an admin role."""
     for admin_role in _get_settings().admin_roles:
         if admin_role in roles:
