@@ -8,14 +8,14 @@ from azul_security.settings import Settings
 
 
 @functools.lru_cache()
-def _get_settings():
+def get_settings():
     """Return an instance of the azul-security settings class, cached."""
     return Settings()
 
 
 def is_admin_roles(roles: list[str]) -> bool:
     """Verify if the list of provided roles contains an admin role."""
-    for admin_role in _get_settings().admin_roles:
+    for admin_role in get_settings().admin_roles:
         if admin_role in roles:
             return True
     return False
