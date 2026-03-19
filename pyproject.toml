@@ -36,6 +36,10 @@ azul-security = "azul_security.display_settings:cli"
 [project.entry-points."azul_restapi.plugin"]
 security = "azul_security.restapi:router"
 
+[[tool.uv.index]]
+url = "https://devpi.acsc.internal/azul/stable/+simple"
+default = true
+
 [project.urls]
 Documentation = "https://australiancybersecuritycentre.github.io/azul/"
 Repository = "https://github.com/AustralianCyberSecurityCentre/azul-security"
