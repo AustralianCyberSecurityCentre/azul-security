@@ -30,11 +30,13 @@ def resetEnv():
             "caveat": {
                 "title": "Required",
                 "options": [
-                    {"name": "MOD1", "priority": "5"},
-                    {"name": "MOD2", "priority": "10"},
-                    {"name": "MOD3", "priority": "15"},
-                    {"name": "HANOVERLAP", "priority": "20"},
-                    {"name": "OVER", "priority": "25"},
+                    {"name": "MOD1"},
+                    {"name": "MOD2"},
+                    {"name": "MOD3"},
+                    {"name": "HANOVERLAP"},
+                    {"name": "OVER"},
+                    {"name": "RESTRICTED1", "min_priority": "10", "max_priority": "10"},
+                    {"name": "RESTRICTED2", "min_priority": "30", "max_priority": "50"},
                 ],
             },
             "releasability": {
@@ -43,18 +45,18 @@ def resetEnv():
                 "origin_alt_name": "APPLEO",
                 "prefix": "REL:",
                 "options": [
-                    {"name": "REL:APPLE", "priority": "0"},
-                    {"name": "REL:BEE", "priority": "10"},
-                    {"name": "REL:CAR", "priority": "20"},
+                    {"name": "REL:APPLE"},
+                    {"name": "REL:BEE"},
+                    {"name": "REL:CAR"},
                 ],
             },
             "tlp": {
                 "title": "TLP",
                 "options": [
-                    {"name": "TLP:CLEAR", "priority": "10"},
-                    {"name": "TLP:GREEN", "priority": "20"},
-                    {"name": "TLP:AMBER", "priority": "30"},
-                    {"name": "TLP:AMBER+STRICT", "priority": "40", "enforce_security": "true"},
+                    {"name": "TLP:CLEAR"},
+                    {"name": "TLP:GREEN"},
+                    {"name": "TLP:AMBER"},
+                    {"name": "TLP:AMBER+STRICT", "enforce_security": "true"},
                 ],
             },
         }

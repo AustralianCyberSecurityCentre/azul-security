@@ -176,20 +176,18 @@ class TestRestapi(unittest.TestCase):
                     },
                     "caveat": {
                         "options": [
-                            {"name": "MOD1", "priority": 5},
-                            {"name": "MOD2", "priority": 10},
-                            {"name": "MOD3", "priority": 15},
-                            {"name": "HANOVERLAP", "priority": 20},
-                            {"name": "OVER", "priority": 25},
+                            {"name": "MOD1", "min_priority": 0, "max_priority": 1000000},
+                            {"name": "MOD2", "min_priority": 0, "max_priority": 1000000},
+                            {"name": "MOD3", "min_priority": 0, "max_priority": 1000000},
+                            {"name": "HANOVERLAP", "min_priority": 0, "max_priority": 1000000},
+                            {"name": "OVER", "min_priority": 0, "max_priority": 1000000},
+                            {"name": "RESTRICTED1", "min_priority": 10, "max_priority": 10},
+                            {"name": "RESTRICTED2", "min_priority": 30, "max_priority": 50},
                         ],
                         "title": "Required",
                     },
                     "releasability": {
-                        "options": [
-                            {"name": "REL:APPLE", "priority": 0},
-                            {"name": "REL:BEE", "priority": 10},
-                            {"name": "REL:CAR", "priority": 20},
-                        ],
+                        "options": [{"name": "REL:APPLE"}, {"name": "REL:BEE"}, {"name": "REL:CAR"}],
                         "title": "Groups",
                         "origin": "REL:APPLE",
                         "origin_alt_name": "APPLEO",
@@ -197,10 +195,10 @@ class TestRestapi(unittest.TestCase):
                     },
                     "tlp": {
                         "options": [
-                            {"name": "TLP:CLEAR", "priority": 10, "enforce_security": False},
-                            {"name": "TLP:GREEN", "priority": 20, "enforce_security": False},
-                            {"name": "TLP:AMBER", "priority": 30, "enforce_security": False},
-                            {"name": "TLP:AMBER+STRICT", "priority": 40, "enforce_security": True},
+                            {"name": "TLP:CLEAR", "enforce_security": False},
+                            {"name": "TLP:GREEN", "enforce_security": False},
+                            {"name": "TLP:AMBER", "enforce_security": False},
+                            {"name": "TLP:AMBER+STRICT", "enforce_security": True},
                         ],
                         "title": "TLP",
                     },

@@ -1,13 +1,16 @@
 """Settings for security module."""
 
 import re
+from collections import defaultdict
 from functools import cached_property
+from typing import Annotated
 
 from azul_bedrock.exception_enums import ExceptionCodeEnum
 from azul_bedrock.exceptions_security import (
     SecurityConfigException,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.functional_validators import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -39,9 +42,33 @@ class LabelOption(BaseModel):
             )
 
     name: str
+
+
+class LabelOptionClassification(LabelOption):
+    """Security Label for classifications."""
+
     # Priority of this security label (higher is more important)
     # Priority is used to limit when TLP's and Releasability can be applied to a classification.
-    priority: int = 0
+    priority: Annotated[int, Field(ge=0, le=1000000)] = 0
+
+
+class LabelOptionCaveat(LabelOption):
+    """Security label for caveat limiting what classifications they are compatible with.
+
+    By default it should be compatible with all classifications.
+    """
+
+    min_priority: Annotated[int, Field(ge=0, le=1000000)] = 0
+    max_priority: Annotated[int, Field(ge=0, le=1000000)] = 1000000
+
+    @model_validator(mode="after")
+    def check_min_less_than_max(self) -> "LabelOptionCaveat":
+        """Verify that the minimum priority is less than the maximum priority."""
+        if self.min_priority > self.max_priority:
+            raise ValueError(
+                f"Bad Caveat '{self.name}' {self.min_priority=} must be less than (or equal to) {self.max_priority=}"
+            )
+        return self
 
 
 class LabelOptionTlp(LabelOption):
@@ -62,6 +89,18 @@ class LabelOptions(BaseModel):
     def get_all_names(self):
         """Return the list of security labels as strings in priority order (first is highest priority)."""
         return [x.name for x in self.options]
+
+
+class LabelOptionsClassification(LabelOptions):
+    """Label options list for all the classifications."""
+
+    options: list[LabelOptionClassification] = []
+
+
+class LabelOptionsCaveat(LabelOptions):
+    """List of Caveats for the classification."""
+
+    options: list[LabelOptionCaveat] = []
 
 
 class LabelOptionsReleasability(LabelOptions):
@@ -89,10 +128,10 @@ class SecurityLabels(BaseModel):
     # Order is from least restrictive to most restrictive.
     # If multiple are preset only the most restrictive is kept.
     # These items are rendered first.
-    classification: LabelOptions = LabelOptions()
+    classification: LabelOptionsClassification = LabelOptionsClassification()
     # If events have multiple of these markings, user must have all of them to access.
     # These items are rendered second.
-    caveat: LabelOptions = LabelOptions()
+    caveat: LabelOptionsCaveat = LabelOptionsCaveat()
     # If events have multiple of these markings, user must have at least one of them to access.
     # REL:APPLE and REL:BANANA automatically combine into a 'REL:APPLE,BANANA' label.
     # These items are rendered third.
@@ -131,7 +170,6 @@ class Settings(BaseSettings):
     # e.g. Azul Metastore stores events without DLS if security of event is subset of this list.
     # Must list all classifications, not only the highest ranking. i.e. ['LOW', 'LOW: LY']
     minimum_required_access: list[str] = []
-
     model_config = SettingsConfigDict(env_prefix="security_")
 
     def __init__(self):
@@ -213,6 +251,15 @@ class Settings(BaseSettings):
             else:
                 _classifications_that_allow_tlps.add(clsf.name)
 
+        # Create the mapping of what caveats are allowed with what classifications.
+        classification_caveat_mapping: dict[str, set] = defaultdict(set)
+        for clsf in self.labels.classification.options:
+            for caveat in self.labels.caveat.options:
+                if clsf.priority >= caveat.min_priority and clsf.priority <= caveat.max_priority:
+                    classification_caveat_mapping[clsf.name].add(caveat.name)
+        # Convert into a frozen set.
+        self._classification_caveat_mapping = {k: frozenset(v) for k, v in classification_caveat_mapping.items()}
+
         # Convert to frozen sets.
         self._classifications_that_allow_rels = frozenset(_classifications_that_allow_rels)
         self._classifications_that_allow_tlps = frozenset(_classifications_that_allow_tlps)
@@ -258,6 +305,11 @@ class Settings(BaseSettings):
     def classifications_that_allow_tlps(self) -> frozenset[str]:
         """List of classifications that are allowed to have TLPs."""
         return self._classifications_that_allow_tlps
+
+    @property
+    def classification_caveat_mapping(self) -> dict[str, frozenset]:
+        """Map a classification to a set of allowed caveats."""
+        return self._classification_caveat_mapping
 
     @property
     def classifications_that_allow_releasability(self) -> frozenset[str]:

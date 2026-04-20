@@ -561,13 +561,30 @@ class TestAnalog(unittest.TestCase):
                     "MOD3",
                     "HANOVERLAP",
                     "OVER",
+                    "RESTRICTED1",
+                    "RESTRICTED2",
                 }
             ),
         )
         self.assertEqual(self.sec.get_labels_inclusive(), frozenset({"REL:APPLE", "REL:BEE", "REL:CAR"}))
         self.assertEqual(
             self.sec.get_labels_exclusive(),
-            frozenset({"LOW: LY", "MOD2", "MOD1", "LOW", "HIGH", "MEDIUM", "TOP HIGH", "OVER", "MOD3", "HANOVERLAP"}),
+            frozenset(
+                {
+                    "LOW: LY",
+                    "MOD2",
+                    "MOD1",
+                    "LOW",
+                    "HIGH",
+                    "MEDIUM",
+                    "TOP HIGH",
+                    "OVER",
+                    "MOD3",
+                    "HANOVERLAP",
+                    "RESTRICTED1",
+                    "RESTRICTED2",
+                }
+            ),
         )
         self.assertEqual(
             self.sec.get_labels_markings(), frozenset({"TLP:AMBER+STRICT", "TLP:AMBER", "TLP:CLEAR", "TLP:GREEN"})
