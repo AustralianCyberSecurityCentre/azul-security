@@ -80,6 +80,29 @@ class SecurityFriendly:
 
         return len(clsfs.intersection(self._settings.classifications_that_allow_releasability)) > 0
 
+    def check_classification_and_caveats_are_compatible(
+        self, exclusive: set[str], is_drop_bad_caveats: bool = False
+    ) -> set[str]:
+        """Check that the classification provided is compatible with the provided caveat."""
+        if len(exclusive) == 0:
+            return exclusive
+        clsfs = exclusive.intersection(set(self._all_classification))
+        caveats = exclusive.intersection(set(self._all_caveat))
+        residual_caveats = set()
+        for c in clsfs:
+            for caveat in caveats:
+                if caveat in self._settings.classification_caveat_mapping[c]:
+                    residual_caveats.add(caveat)
+
+        bad_caveats = caveats.difference(residual_caveats)
+        if not is_drop_bad_caveats and len(bad_caveats) > 0:
+            raise SecurityParseException(
+                ref=f"Caveats '{bad_caveats}' are not compatible with the provided classification in the string '{clsfs}'.",
+                internal=ExceptionCodeEnum.SecurityClassificationIncompatibleCaveats,
+                parameters={"bad_caveats": bad_caveats, "clsfs": clsfs},
+            )
+        return exclusive.difference(bad_caveats)
+
     def _minimise(self, items: frozenset[str], targets: list[str]) -> frozenset[str]:
         """If there are multiple items in the intersection of 'items' and 'targets', keep last mentioned in 'targets'.
 
@@ -164,6 +187,10 @@ class SecurityFriendly:
 
         # there can only be one classification (but keep 'required')
         exc = self._minimise(exc, self._settings.labels.classification.get_all_names())
+
+        # Limit the number of Caveats to what is permissible
+        exc = self.check_classification_and_caveats_are_compatible(set(exc), is_drop_bad_caveats=True)
+        exc = frozenset(exc)
 
         # there can be only one info (tlp)
         oth = self._minimise(oth, self._settings.labels.tlp.get_all_names())

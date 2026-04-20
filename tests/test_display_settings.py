@@ -42,6 +42,8 @@ s-over
 s-rel-apple
 s-rel-bee
 s-rel-car
+s-restricted1
+s-restricted2
 s-tlp-amber
 s-tlp-amber-strict
 s-tlp-clear
@@ -70,6 +72,8 @@ Admins will need to create these roles and map them to the appropriate backend_r
 's-rel-apple': 'REL:APPLE'
 's-rel-bee': 'REL:BEE'
 's-rel-car': 'REL:CAR'
+'s-restricted1': 'RESTRICTED1'
+'s-restricted2': 'RESTRICTED2'
 's-tlp-amber': 'TLP:AMBER'
 's-tlp-amber-strict': 'TLP:AMBER+STRICT'
 's-tlp-clear': 'TLP:CLEAR'
@@ -97,6 +101,8 @@ Admins will need to create these roles and map them to the appropriate backend_r
 'REL:APPLE': 's-rel-apple'
 'REL:BEE': 's-rel-bee'
 'REL:CAR': 's-rel-car'
+'RESTRICTED1': 's-restricted1'
+'RESTRICTED2': 's-restricted2'
 'TLP:AMBER': 's-tlp-amber'
 'TLP:AMBER+STRICT': 's-tlp-amber-strict'
 'TLP:CLEAR': 's-tlp-clear'
