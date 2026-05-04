@@ -22,11 +22,6 @@ class TestDisplaySetting(unittest.TestCase):
         self.assertEqual(
             result.stdout,
             """The following roles must exist in Opensearch for Azul security to work:
-azul-fill1
-azul-fill2
-azul-fill3
-azul-fill4
-azul-fill5
 azul_read
 azul_write
 s-any

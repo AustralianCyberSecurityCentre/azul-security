@@ -324,11 +324,5 @@ class Settings(BaseSettings):
         result.append("s-any")
         result.append("azul_read")
         result.append("azul_write")
-        # fillers to prevent Opensearch prevent SG 900D errors
-        result.append("azul-fill1")
-        result.append("azul-fill2")
-        result.append("azul-fill3")
-        result.append("azul-fill4")
-        result.append("azul-fill5")
 
         return result
