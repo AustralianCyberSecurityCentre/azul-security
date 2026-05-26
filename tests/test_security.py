@@ -549,6 +549,33 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
+    def test_summarise_user_access_with_multiple_non_origin_rels(self):
+        """Verify a user with high access with RELs can summarise and have access to the system."""
+        ret = self.sec.summarise_user_access(["TOP HIGH", "REL:BEE", "REL:CAR"])
+        print(ret)
+        self.assertEqual(ret.labels, ["REL:APPLE", "REL:BEE", "REL:CAR", "TOP HIGH"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:BEE", "REL:CAR"])
+        self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
+
+        # Same but with an include list (AND filtering)
+        ret = self.sec.summarise_user_access(["TOP HIGH", "REL:BEE", "REL:CAR"], includelist=["REL:BEE", "REL:CAR"])
+        print(ret)
+        self.assertEqual(ret.labels, ["REL:APPLE", "REL:BEE", "REL:CAR", "TOP HIGH"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:BEE", "REL:CAR"])
+        self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
+
     def test_summarise_user_access_with_rels_no_origin(self):
         """Verify a user with high access with RELs that aren't he origin can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["HIGH", "REL:CAR"])
