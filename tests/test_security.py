@@ -560,7 +560,7 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.labels_markings, [])
 
         self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
-        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
         # Same but with an include list (AND filtering)

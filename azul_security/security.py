@@ -302,6 +302,18 @@ class Security:
         ret.labels_markings = sorted(self._s.markings.intersection(calculated_labels))
         ret.unique = self._access_calc_unique(calculated_labels)
         max_access_inclusive = ret.labels_inclusive.copy()
+        temp_access_inclusive = []
+        temp_rel_names = self._s.labels.releasability.get_all_names()
+        is_rel_present = False
+        # Drop down to only one releasability if there is more than one
+        for i in max_access_inclusive:
+            if i in temp_rel_names and i != self._s.labels.releasability.origin:
+                if is_rel_present:
+                    continue
+                is_rel_present = True
+            temp_access_inclusive.append(i)
+        max_access_inclusive = temp_access_inclusive
+
         # Add all included labels because they will limit the max access during an AND security search
         # This may result in a max classification the user can't actually see.
         for i in includelist:
@@ -313,7 +325,6 @@ class Security:
         # Factor in if the user has explicitly requested to avoid rel:ORIGIN only items with an includelist.
         if self._s.labels.releasability.origin and self._s.labels.releasability.origin in labels:
             new_max_access_inclusive = []
-            temp_rel_names = self._s.labels.releasability.get_all_names()
             for i_label in max_access_inclusive:
                 if (
                     i_label == self._s.labels.releasability.origin
