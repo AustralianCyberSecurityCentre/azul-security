@@ -506,6 +506,22 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
+    def test_summarise_higher_user_access_with_no_rels(self):
+        """Test what happens if  user has high access but no RELs provided.
+
+        Previously they could just be given a REL any way."""
+        # Same but with an include list (AND filtering)
+        ret = self.sec.summarise_user_access(["TOP HIGH"])
+        self.assertEqual(ret.labels, ["TOP HIGH"])
+
+        self.assertEqual(ret.labels_inclusive, [])
+        self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "f57209e575644291e59d6483f05f5872")
+        self.assertEqual(ret.max_access, "TOP HIGH")
+        self.assertEqual(ret.allowed_presets, [])
+
     def test_summarise_user_access_with_origin_and_other_rels(self):
         """Verify a user with high access with RELs can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["TOP HIGH", "REL:APPLE", "REL:BEE"])

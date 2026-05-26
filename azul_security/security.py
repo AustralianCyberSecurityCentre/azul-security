@@ -272,7 +272,9 @@ class Security:
         ret = UserSecurity()
         calculated_labels = labels.copy()
         if self._s.labels.releasability.origin and self._s.labels.releasability.origin not in calculated_labels:
-            calculated_labels.append(self._s.labels.releasability.origin)
+            # Check there is already at least one intersection before adding the origin.
+            if len(set(self._s.labels.releasability.get_all_names()).intersection(set(calculated_labels))) > 0:
+                calculated_labels.append(self._s.labels.releasability.origin)
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
         missing = self.minimum_required_access.difference(calculated_labels)
