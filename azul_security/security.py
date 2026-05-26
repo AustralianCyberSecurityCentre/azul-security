@@ -299,12 +299,26 @@ class Security:
         ret.labels_inclusive = sorted(self._s.inclusive.intersection(calculated_labels))
         ret.labels_markings = sorted(self._s.markings.intersection(calculated_labels))
         ret.unique = self._access_calc_unique(calculated_labels)
-        max_access_inclusive = ret.labels_inclusive
-        if self._s.labels.releasability.origin and self._s.labels.releasability.origin in max_access_inclusive:
+        max_access_inclusive = ret.labels_inclusive.copy()
+        # Add all included labels because they will limit the max access during an AND security search
+        # This may result in a max classification the user can't actually see.
+        for i in includelist:
+            max_access_inclusive.append(i)
+        max_access_inclusive = sorted(self._s.inclusive.intersection(max_access_inclusive))
+
+        # If the user had origin in their original label, they have access to rel:ORIGIN which is access to the most
+        # restricted items, so calculate it as the origin only as that is a higher classification.
+        # Factor in if the user has explicitly requested to avoid rel:ORIGIN only items with an includelist.
+        if self._s.labels.releasability.origin and self._s.labels.releasability.origin in labels:
             new_max_access_inclusive = []
             temp_rel_names = self._s.labels.releasability.get_all_names()
             for i_label in max_access_inclusive:
-                if i_label == self._s.labels.releasability.origin or i_label not in temp_rel_names:
+                if (
+                    i_label == self._s.labels.releasability.origin
+                    # Drop all rels that aren't the origin
+                    or i_label not in temp_rel_names
+                    or i_label in includelist
+                ):
                     new_max_access_inclusive.append(i_label)
             max_access_inclusive = sorted(self._s.inclusive.intersection(new_max_access_inclusive))
 

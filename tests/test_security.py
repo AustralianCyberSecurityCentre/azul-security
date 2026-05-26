@@ -476,6 +476,10 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.max_access, "LOW TLP:CLEAR")
         self.assertEqual(ret.allowed_presets, ["LOW TLP:CLEAR"])
 
+        # AND filtering, but it doesn't work because the user can't see any relesabilities anyway.
+        with self.assertRaises(exceptions_security.SecurityParseException):
+            ret = self.sec.summarise_user_access(["LOW", "TLP:CLEAR"], includelist=["REL:APPLE"])
+
     def test_summarise_user_access_with_rels(self):
         """Verify a user with high access with RELs can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["TOP HIGH", "REL:APPLE"])
@@ -488,6 +492,18 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "458fa7e061b9c0b4c47e1ada9523ad59")
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")
+        self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
+
+        # Same but with an include list (AND filtering)
+        ret = self.sec.summarise_user_access(["TOP HIGH", "REL:APPLE"], includelist=["REL:CAR"])
+        self.assertEqual(ret.labels, ["REL:APPLE", "TOP HIGH"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE"])
+        self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "458fa7e061b9c0b4c47e1ada9523ad59")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
     def test_summarise_user_access_with_origin_and_other_rels(self):
@@ -504,6 +520,19 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
+        # Same but with an include list (AND filtering)
+        ret = self.sec.summarise_user_access(["TOP HIGH", "REL:APPLE", "REL:BEE"], includelist=["REL:BEE", "REL:CAR"])
+        print(ret)
+        self.assertEqual(ret.labels, ["REL:APPLE", "REL:BEE", "TOP HIGH"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:BEE"])
+        self.assertEqual(ret.labels_exclusive, ["TOP HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "362fc4436b7d28e5fbf524fa06859789")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
+
     def test_summarise_user_access_with_rels_no_origin(self):
         """Verify a user with high access with RELs that aren't he origin can summarise and have access to the system."""
         ret = self.sec.summarise_user_access(["HIGH", "REL:CAR"])
@@ -515,7 +544,31 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.labels_markings, [])
 
         self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
-        self.assertEqual(ret.max_access, "HIGH REL:APPLEO")
+        self.assertEqual(ret.max_access, "HIGH REL:APPLE,CAR")
+        self.assertEqual(ret.allowed_presets, ["HIGH"])
+
+        # Same but with an include list (AND filtering)
+        ret = self.sec.summarise_user_access(["HIGH", "REL:CAR"], includelist=["REL:APPLE"])
+        self.assertEqual(ret.labels, ["HIGH", "REL:APPLE", "REL:CAR"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:CAR"])
+        self.assertEqual(ret.labels_exclusive, ["HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
+        self.assertEqual(ret.max_access, "HIGH REL:APPLE,CAR")
+        self.assertEqual(ret.allowed_presets, ["HIGH"])
+
+        # Same but with an include list (AND filtering, including CAR)
+        ret = self.sec.summarise_user_access(["HIGH", "REL:CAR"], includelist=["REL:APPLE", "REL:CAR", "REL:BEE"])
+        self.assertEqual(ret.labels, ["HIGH", "REL:APPLE", "REL:CAR"])
+
+        self.assertEqual(ret.labels_inclusive, ["REL:APPLE", "REL:CAR"])
+        self.assertEqual(ret.labels_exclusive, ["HIGH"])
+        self.assertEqual(ret.labels_markings, [])
+
+        self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
+        self.assertEqual(ret.max_access, "HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["HIGH"])
 
     def test_get_enforceable_tlps(self):
