@@ -270,13 +270,14 @@ class Security:
         if not includelist:
             includelist = []
         ret = UserSecurity()
-        if self._s.labels.releasability.origin and self._s.labels.releasability.origin not in labels:
-            labels.append(self._s.labels.releasability.origin)
-        else:
-            labels += [item for item in self._s.labels.releasability.get_all_names() if item not in labels]
+        calculated_labels = labels.copy()
+        if self._s.labels.releasability.origin and self._s.labels.releasability.origin not in calculated_labels:
+            # Check there is already at least one intersection before adding the origin.
+            if len(set(self._s.labels.releasability.get_all_names()).intersection(set(calculated_labels))) > 0:
+                calculated_labels.append(self._s.labels.releasability.origin)
         # check access meets minimum requirements
         # must verify BEFORE applying the denylist as this is only intended to detect misconfiguration
-        missing = self.minimum_required_access.difference(labels)
+        missing = self.minimum_required_access.difference(calculated_labels)
         if missing:
             missing_labels = str(list(missing))
             raise SecurityAccessException(
@@ -285,30 +286,66 @@ class Security:
                 parameters={"missing_labels": missing_labels},
             )
         # remove security labels in the denylist
-        labels = set(labels).difference(set(x.upper() for x in denylist))
-        exclusive_labels = sorted(self._s.exclusive.intersection(labels))
+        calculated_labels = set(calculated_labels).difference(set(x.upper() for x in denylist))
+        exclusive_labels = sorted(self._s.exclusive.intersection(calculated_labels))
         # Deny all rel's if the deny list has removed all high classification items.
         if not self._friendly.is_classification_allowed_rels(set(exclusive_labels)):
-            labels = set(labels).difference(set(rel.upper() for rel in self._s.labels.releasability.get_all_names()))
+            calculated_labels = set(calculated_labels).difference(
+                set(rel.upper() for rel in self._s.labels.releasability.get_all_names())
+            )
 
-        ret.labels = sorted(labels)
+        ret.labels = sorted(calculated_labels)
 
         # bucket the security labels
         ret.labels_exclusive = exclusive_labels
-        ret.labels_inclusive = sorted(self._s.inclusive.intersection(labels))
-        ret.labels_markings = sorted(self._s.markings.intersection(labels))
-        ret.unique = self._access_calc_unique(labels)
+        ret.labels_inclusive = sorted(self._s.inclusive.intersection(calculated_labels))
+        ret.labels_markings = sorted(self._s.markings.intersection(calculated_labels))
+        ret.unique = self._access_calc_unique(calculated_labels)
+        max_access_inclusive = ret.labels_inclusive.copy()
+        temp_access_inclusive = []
+        temp_rel_names = self._s.labels.releasability.get_all_names()
+        is_rel_present = False
+        # Drop down to only one releasability if there is more than one
+        for i in max_access_inclusive:
+            if i in temp_rel_names and i != self._s.labels.releasability.origin:
+                if is_rel_present:
+                    continue
+                is_rel_present = True
+            temp_access_inclusive.append(i)
+        max_access_inclusive = temp_access_inclusive
+
+        # Add all included labels because they will limit the max access during an AND security search
+        # This may result in a max classification the user can't actually see.
+        for i in includelist:
+            max_access_inclusive.append(i)
+        max_access_inclusive = sorted(self._s.inclusive.intersection(max_access_inclusive))
+
+        # If the user had origin in their original label, they have access to rel:ORIGIN which is access to the most
+        # restricted items, so calculate it as the origin only as that is a higher classification.
+        # Factor in if the user has explicitly requested to avoid rel:ORIGIN only items with an includelist.
+        if self._s.labels.releasability.origin and self._s.labels.releasability.origin in labels:
+            new_max_access_inclusive = []
+            for i_label in max_access_inclusive:
+                if (
+                    i_label == self._s.labels.releasability.origin
+                    # Drop all rels that aren't the origin
+                    or i_label not in temp_rel_names
+                    or i_label in includelist
+                ):
+                    new_max_access_inclusive.append(i_label)
+            max_access_inclusive = sorted(self._s.inclusive.intersection(new_max_access_inclusive))
+
         ret.max_access = self._friendly.from_labels(
             self._friendly.normalise(
-                to_securityt(ret.labels_exclusive, ret.labels_inclusive, ret.labels_markings), ignore_origin=True
+                to_securityt(ret.labels_exclusive, max_access_inclusive, ret.labels_markings), ignore_origin=True
             )
         )
 
-        ret.allowed_presets = self._get_allowed_presets(labels)
+        ret.allowed_presets = self._get_allowed_presets(calculated_labels)
 
         if (
-            len(ret.labels_inclusive) == 1
-            and ret.labels_inclusive[0] == self._s.labels.releasability.origin
+            len(max_access_inclusive) == 1
+            and max_access_inclusive[0] == self._s.labels.releasability.origin
             and self._s.labels.releasability.origin_alt_name
         ):
             updated_max_access = re.sub(
