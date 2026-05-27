@@ -149,6 +149,7 @@ class TestBasic(unittest.TestCase):
 
     def test_normalise(self):
         self.assertEqual("HIGH REL:APPLE", self.sec.string_normalise("HIGH REL:APPLE"))
+        self.assertEqual("HIGH REL:APPLE", self.sec.string_normalise("HIGH REL:APPLEO"))
         self.assertEqual("HIGH", self.sec.string_normalise("HIGH"))
         self.assertEqual(
             "HIGH REL:APPLE,BEE,CAR",
@@ -164,6 +165,7 @@ class TestBasic(unittest.TestCase):
         self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "HIGHTLP:GREEN")
 
         self.assertEqual("HIGH REL:APPLE", self.sec.string_normalise("high///REL:APPLE"))
+        self.assertEqual("HIGH REL:APPLE", self.sec.string_normalise("high///REL:APPLEO"))
         self.assertEqual(
             "HIGH REL:APPLE,BEE",
             self.sec.string_normalise("HIGH///REL:APPLE\\REL:BEE"),
@@ -198,6 +200,7 @@ class TestBasic(unittest.TestCase):
         self.assertEqual(self.sec.string_unique("LOW TLP:CLEAR"), "b15bf68723013e78cbc15b8eb85b8fd8")
         self.assertEqual(self.sec.string_unique("MEDIUM REL:APPLE,BEE,CAR"), "741445afa8e5a5777f7675fc5bf0ae25")
         self.assertEqual(self.sec.string_unique("HIGH REL:APPLE,BEE,CAR"), "5c878e955bf9b8b462ecdd4d9311be42")
+        self.assertEqual(self.sec.string_unique("HIGH REL:APPLE"), self.sec.string_unique("HIGH REL:APPLEO"))
 
     def test_presets(self):
         self.assertEqual("LOW TLP:CLEAR", self.sec._s.presets[0])
@@ -217,6 +220,9 @@ class TestBasic(unittest.TestCase):
         self.assertTrue(self.sec.check_access(user_perm, obj_perm))
 
         obj_perm = "REL:APPLE MEDIUM"
+        self.assertTrue(self.sec.check_access(user_perm, obj_perm))
+
+        obj_perm = "REL:APPLEO MEDIUM"
         self.assertTrue(self.sec.check_access(user_perm, obj_perm))
 
         obj_perm = "REL:CAR MEDIUM"
@@ -249,6 +255,11 @@ class TestBasic(unittest.TestCase):
 
         # Change user permissions to ensure the appropriate user can still access the marking.
         user_perm = ["LOW", "TLP:AMBER+STRICT"]
+        self.assertTrue(self.sec.check_access(user_perm, obj_perm))
+
+        # Alt origin should be allowed
+        user_perm = ["REL:APPLE", "MEDIUM"]
+        obj_perm = "REL:APPLEO MEDIUM"
         self.assertTrue(self.sec.check_access(user_perm, obj_perm))
 
         user_perm = ["REL:APPLE", "REL:BEE", "LOW"]

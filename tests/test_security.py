@@ -194,6 +194,10 @@ class TestAnalog(unittest.TestCase):
             "MEDIUM REL:APPLE,BEE",
             self.sec.string_normalise("MEDIUM REL:APPLE,BEE"),
         )
+        self.assertEqual(
+            "MEDIUM REL:APPLE",
+            self.sec.string_normalise("MEDIUM REL:APPLEO"),
+        )
         self.assertRaises(exceptions_security.SecurityParseException, self.sec.string_normalise, "REL:BEE,CAR")
 
     def test_exclusive(self):
@@ -309,7 +313,8 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "3c4030fbc1cac2518831a8fa476cd2db")
 
-        self.assertEqual(ret.max_access, "TOP HIGH MOD1 MOD2 REL:APPLEO")
+        self.assertEqual(ret.max_access, "TOP HIGH MOD1 MOD2 REL:APPLE")
+        self.assertEqual(ret.max_access_display, "TOP HIGH MOD1 MOD2 REL:APPLEO")
 
         self.assertEqual(
             ret.allowed_presets,
@@ -365,6 +370,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "41bc94cbd8eebea13ce0491b2ac11b88")
         self.assertEqual(ret.max_access, "LOW")
+        self.assertEqual(ret.max_access_display, "LOW")
         self.assertEqual(
             ret.allowed_presets,
             [
@@ -409,6 +415,7 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.unique, "5a929d2916adbb837329a09214e89074")
 
         self.assertEqual(ret.max_access, "LOW: LY MOD1 MOD2 TLP:AMBER+STRICT")
+        self.assertEqual(ret.max_access_display, "LOW: LY MOD1 MOD2 TLP:AMBER+STRICT")
         self.assertEqual(
             ret.allowed_presets,
             [
@@ -455,6 +462,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "a876d65ff5384928d2ff2b9bcd5875ed")
         self.assertEqual(ret.max_access, "TOP HIGH MOD1 MOD2")
+        self.assertEqual(ret.max_access_display, "TOP HIGH MOD1 MOD2")
         self.assertEqual(
             ret.allowed_presets,
             [
@@ -474,6 +482,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "93a7969076f12224c1f7cc0ad078ed67")
         self.assertEqual(ret.max_access, "LOW TLP:CLEAR")
+        self.assertEqual(ret.max_access_display, "LOW TLP:CLEAR")
         self.assertEqual(ret.allowed_presets, ["LOW TLP:CLEAR"])
 
         # AND filtering, but it doesn't work because the user can't see any relesabilities anyway.
@@ -491,7 +500,8 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.labels_markings, [])
 
         self.assertEqual(ret.unique, "458fa7e061b9c0b4c47e1ada9523ad59")
-        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLEO")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
         # Same but with an include list (AND filtering)
@@ -504,6 +514,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "458fa7e061b9c0b4c47e1ada9523ad59")
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,CAR")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
     def test_summarise_higher_user_access_with_no_rels(self):
@@ -520,6 +531,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "f57209e575644291e59d6483f05f5872")
         self.assertEqual(ret.max_access, "TOP HIGH")
+        self.assertEqual(ret.max_access_display, "TOP HIGH")
         self.assertEqual(ret.allowed_presets, [])
 
     def test_summarise_user_access_with_origin_and_other_rels(self):
@@ -533,7 +545,8 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.labels_markings, [])
 
         self.assertEqual(ret.unique, "362fc4436b7d28e5fbf524fa06859789")
-        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLEO")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
         # Same but with an include list (AND filtering)
@@ -547,6 +560,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "362fc4436b7d28e5fbf524fa06859789")
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
     def test_summarise_user_access_with_multiple_non_origin_rels(self):
@@ -561,6 +575,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLE,BEE")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
         # Same but with an include list (AND filtering)
@@ -574,6 +589,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "cee092cac12cfa12c25f9ec8dc04bea0")
         self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
     def test_summarise_user_access_with_rels_no_origin(self):
@@ -588,6 +604,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
         self.assertEqual(ret.max_access, "HIGH REL:APPLE,CAR")
+        self.assertEqual(ret.max_access_display, "HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["HIGH"])
 
         # Same but with an include list (AND filtering)
@@ -600,6 +617,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
         self.assertEqual(ret.max_access, "HIGH REL:APPLE,CAR")
+        self.assertEqual(ret.max_access_display, "HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["HIGH"])
 
         # Same but with an include list (AND filtering, including CAR)
@@ -612,6 +630,7 @@ class TestAnalog(unittest.TestCase):
 
         self.assertEqual(ret.unique, "633f554c1fbe9c7b816b56888a820e8e")
         self.assertEqual(ret.max_access, "HIGH REL:APPLE,BEE,CAR")
+        self.assertEqual(ret.max_access_display, "HIGH REL:APPLE,BEE,CAR")
         self.assertEqual(ret.allowed_presets, ["HIGH"])
 
     def test_get_enforceable_tlps(self):
@@ -743,4 +762,5 @@ class TestAnalog(unittest.TestCase):
                 "TLP:GREEN",
             ],
         )
-        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLEO")
+        self.assertEqual(ret.max_access, "TOP HIGH REL:APPLE")
+        self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLEO")

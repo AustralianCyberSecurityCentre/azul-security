@@ -340,6 +340,7 @@ class Security:
                 to_securityt(ret.labels_exclusive, max_access_inclusive, ret.labels_markings), ignore_origin=True
             )
         )
+        ret.max_access_display = ret.max_access
 
         ret.allowed_presets = self._get_allowed_presets(calculated_labels)
 
@@ -349,10 +350,12 @@ class Security:
             and self._s.labels.releasability.origin_alt_name
         ):
             updated_max_access = re.sub(
-                r"REL:[^ ]*", f"REL:{self._s.labels.releasability.origin_alt_name}", ret.max_access
+                rf"{self._s.labels.releasability.prefix}[^ ]*",
+                f"{self._s.labels.releasability.prefix}{self._s.labels.releasability.origin_alt_name}",
+                ret.max_access,
             )
             # Update ret.max_access
-            ret.max_access = updated_max_access
+            ret.max_access_display = updated_max_access
         return ret
 
     @cachetools.cachedmethod(lambda self: self._cache_enforceable_markings, key=lambda _self, m: "-".join(sorted(m)))

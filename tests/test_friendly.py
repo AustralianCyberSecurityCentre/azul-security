@@ -97,6 +97,7 @@ class TestInvalids(unittest.TestCase):
         self.assertEqual(
             ({"TOP HIGH", "MOD2"}, {"REL:APPLE", "REL:BEE"}, set()), self.fr.to_labels("TOP HIGH/MOD2 REL:APPLE,BEE")
         )
+        self.assertEqual(({"TOP HIGH", "MOD2"}, {"REL:APPLE"}, set()), self.fr.to_labels("TOP HIGH/MOD2 REL:APPLEO"))
 
         self.assertRaises(
             exceptions_security.SecurityParseException, self.fr.to_labels, "HIGH/MOD2 REL:APPLE,BEE turbo"
@@ -133,6 +134,10 @@ class TestInvalids(unittest.TestCase):
         self.assertEqual(
             "TOP HIGH MOD2 REL:APPLE,BEE",
             self.fr.from_labels(to_securityt({"MOD2", "TOP HIGH"}, {"REL:BEE", "REL:APPLE"}, {})),
+        )
+        self.assertEqual(
+            "TOP HIGH MOD2 REL:APPLE",
+            self.fr.from_labels(to_securityt({"MOD2", "TOP HIGH"}, {"REL:APPLEO"}, {})),
         )
 
         self.assertRaises(
