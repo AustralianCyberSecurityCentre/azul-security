@@ -60,7 +60,7 @@ def show_role_mapping(is_unsafe_to_safe: bool):
 
 @cli.command(
     help="""
-Check if the providied security is allowed to access the second provided security.
+Check if the provided security is allowed to access the second provided security.
 Return true, or false depending on the result"""
 )
 @click.argument("requestor_security")
