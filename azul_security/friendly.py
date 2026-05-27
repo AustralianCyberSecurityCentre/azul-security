@@ -63,6 +63,18 @@ class SecurityFriendly:
             ret.update(f"{self._prefix}{x}" for x in group.replace(self._prefix, "", 1).split(",") if x)
         return sec, ret
 
+    def _replace_origin_alt_name(self, inc: set[str]):
+        """Replace any instances of the alt origin name with the non-alt name.
+
+        Expected input is the inclusive set in the form ['REL:APPLE','REL:BEE','REL:CAR']
+        """
+        for rel in inc:
+            if rel == f"{self._prefix}{self._settings._origin_alt_name}":
+                # Remove alt-origin and replace with origin
+                inc.remove(rel)
+                inc.add(self._settings.labels.releasability.origin)
+                break
+
     def _merge_releasability(self, split: list[str]) -> str:
         """Turn a list of inclusives into a merged group.
 
@@ -242,6 +254,7 @@ class SecurityFriendly:
         normalised = normalised.strip()
         if normalised:
             normalised, inc = self._split_releasability(normalised)
+            self._replace_origin_alt_name(inc)
 
         minimal = normalised.replace(" ", "")
         if minimal:
@@ -283,6 +296,9 @@ class SecurityFriendly:
                 ret.append(security_label)
 
         # releasability from inclusives
+        new_inc = set(inc)
+        self._replace_origin_alt_name(new_inc)
+        inc = frozenset(new_inc)
         group_diff = inc.difference(self._all_releasability)
         if group_diff:
             raise SecurityParseException(
