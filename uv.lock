@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-05-20T03:54:37.052136134Z"
+exclude-newer = "2026-05-20T03:55:11.665938092Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -96,7 +96,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "azul-bedrock", specifier = ">=11.0.90", index = "https://devpi.acsc.internal/azul/stable/" },
+    { name = "azul-bedrock", specifier = ">=11.0.110", index = "https://devpi.acsc.internal/azul/stable/" },
     { name = "cachetools", specifier = ">=7.0.0" },
     { name = "pydantic", specifier = ">2" },
     { name = "pydantic-settings", specifier = ">2" },
