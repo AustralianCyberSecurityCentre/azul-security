@@ -233,6 +233,9 @@ class TestBasic(unittest.TestCase):
         obj_perm = "REL:APPLE REL:BEE REL:CAR HIGH"
         self.assertFalse(self.sec.check_access(user_perm, obj_perm))
 
+        obj_perm = "MOD1 MEDIUM"
+        self.assertFalse(self.sec.check_access(user_perm, obj_perm))
+
         obj_perm = "REL:APPLE REL:BEE REL:CAR MEDIUM"
         self.assertTrue(self.sec.check_access(user_perm, obj_perm))
 
@@ -268,6 +271,73 @@ class TestBasic(unittest.TestCase):
         # check does raise
         self.assertRaises(
             exceptions_security.SecurityAccessException, self.sec.check_access, *(user_perm, obj_perm, True)
+        )
+
+    def test_check_access_security(self):
+        user_perm = "MEDIUM REL:APPLE,BEE"
+        obj_perm = "REL:APPLE REL:BEE MEDIUM"
+
+        # User and object same permissions
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        # Vary inclusive groups
+        obj_perm = "REL:APPLE,BEE,CAR MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "REL:APPLE MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "REL:APPLEO MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "REL:CAR MEDIUM"
+
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.sec.check_access_security, *(user_perm, obj_perm)
+        )
+
+        # Vary the exclusive groups
+        obj_perm = "REL:APPLE REL:BEE REL:CAR HIGH"
+        self.assertFalse(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "MOD1 MEDIUM"
+        self.assertFalse(self.sec.check_access(user_perm, obj_perm))
+
+        obj_perm = "REL:APPLE REL:BEE REL:CAR MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        # Vary inclusive with exclusive group
+        obj_perm = "REL:APPLE MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "REL:CAR MEDIUM"
+        self.assertRaises(exceptions_security.SecurityParseException, self.sec.check_access, *(user_perm, obj_perm))
+
+        # Check Enforceable marking
+        obj_perm = "LOW TLP:CLEAR"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "LOW TLP:GREEN"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        obj_perm = "LOW TLP:AMBER+STRICT"
+        self.assertFalse(self.sec.check_access_security(user_perm, obj_perm))
+
+        # Change user permissions to ensure the appropriate user can still access the marking.
+        user_perm = "LOW TLP:AMBER+STRICT"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        # Alt origin should be allowed
+        user_perm = "REL:APPLE MEDIUM"
+        obj_perm = "REL:APPLEO MEDIUM"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        user_perm = "REL:APPLE REL:BEE LOW"
+        obj_perm = "REL:APPLE REL:BEE MEDIUM"
+
+        # check does raise
+        self.assertRaises(
+            exceptions_security.SecurityParseException, self.sec.check_access_security, *(user_perm, obj_perm)
         )
 
     def test_get_allowed_presets(self):

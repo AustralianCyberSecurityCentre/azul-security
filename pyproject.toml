@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [project.scripts]
-azul-security = "azul_security.display_settings:cli"
+azul-security = "azul_security.cli_commands:cli"
 
 [project.entry-points."azul_restapi.plugin"]
 security = "azul_security.restapi:router"

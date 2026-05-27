@@ -66,6 +66,10 @@ class Security:
                 internal=ExceptionCodeEnum.SecuritySecurityDefaultNotSet,
             )
         s.default = self.string_normalise(s.default)
+        # sorted highest classification first then all others.
+        self.ordered_classifications = sorted(
+            self._s.labels.classification.options, key=lambda c: c.priority, reverse=True
+        )
 
     def get_labels_allowed(self) -> frozenset[str]:
         """Return all security labels."""
@@ -166,6 +170,23 @@ class Security:
         # used for uniqueness of the returned list of accesses
         # using md5 here is fine, since the allowed tags are from a set list, rather than user input
         return md5(" ".join(sorted(parsed.exclusive) + sorted(parsed.inclusive) + sorted(parsed.markings)))
+
+    def check_access_security(self, author_security: str, protected_object_security: str):
+        """Check if the provided author security has permissions to view the protected object."""
+        author_labels = self._friendly.to_labels(author_security)
+
+        # Loop through an ordered list of classifications to get all classifications below the specified level
+        # E.g if an author has HIGH this automatically gives everything in-between medium, low...
+        is_max_classification_seen = False
+        new_exclusive = set(author_labels.exclusive)
+        for classification in self.ordered_classifications:
+            if classification.name in author_labels.exclusive:
+                is_max_classification_seen = True
+            if is_max_classification_seen:
+                new_exclusive.add(classification.name)
+
+        author_labels = set(list(new_exclusive) + list(author_labels.inclusive) + list(author_labels.markings))
+        return self.check_access(author_labels, protected_object_security)
 
     def check_access(
         self, permitted_labels: Iterable[str], protected_object_permission: str, raise_error: bool = False

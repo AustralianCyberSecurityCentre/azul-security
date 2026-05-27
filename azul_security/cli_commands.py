@@ -1,6 +1,11 @@
 """Display the current security configuration."""
 
+import traceback
+
 import click
+from azul_bedrock.exceptions_security import SecurityParseException
+
+from azul_security.security import Security
 
 from . import settings
 
@@ -19,8 +24,8 @@ configuration to work with Opensearch.
 )
 def show_opensearch_roles():
     """Console command to display the roles that need to be created in Opensearch."""
-    set = settings.Settings()
-    render = set.required_opensearch_roles
+    current_settings = settings.Settings()
+    render = current_settings.required_opensearch_roles
     result = "The following roles must exist in Opensearch for Azul security to work:\n"
     result += "\n".join(sorted(render))
     result += (
@@ -51,6 +56,27 @@ def show_role_mapping(is_unsafe_to_safe: bool):
 
     result += "\n".join(f"'{k}': '{v}'" for k, v in render.items())
     click.echo(result)
+
+
+@cli.command(
+    help="""
+Check if the provided security is allowed to access the second provided security.
+Return true, or false depending on the result"""
+)
+@click.argument("requestor_security")
+@click.argument("guarded_security")
+def can_access(requestor_security: str, guarded_security: str):
+    """Console command to compare to security strings."""
+    try:
+        security_ref = Security()
+        if security_ref.check_access_security(requestor_security, guarded_security):
+            click.echo("true")
+        else:
+            click.echo("false")
+    except SecurityParseException as e:
+        click.echo("BadSecurity" + e.external)
+    except Exception:
+        click.echo(f"Failed with unexpected error\n{traceback.format_exc()}")
 
 
 if __name__ == "__main__":

@@ -1,10 +1,8 @@
-import json
-import os
 import unittest
 
 from click.testing import CliRunner
 
-from azul_security import display_settings
+from azul_security import cli_commands
 from azul_security import security as se
 
 from . import support
@@ -17,7 +15,7 @@ class TestDisplaySetting(unittest.TestCase):
 
     def test_display_opensearch_roles_to_be_created(self):
         runner = CliRunner()
-        result = runner.invoke(display_settings.show_opensearch_roles)
+        result = runner.invoke(cli_commands.show_opensearch_roles)
         print(result.stdout)
         self.assertEqual(
             result.stdout,
@@ -55,7 +53,7 @@ Admins will need to create these roles and map them to the appropriate backend_r
 
     def test_display_safe_to_unsafe(self):
         runner = CliRunner()
-        result = runner.invoke(display_settings.show_role_mapping)
+        result = runner.invoke(cli_commands.show_role_mapping)
         print(result.stdout)
         self.assertEqual(
             result.stdout,
@@ -84,7 +82,7 @@ Admins will need to create these roles and map them to the appropriate backend_r
 
     def test_display_unsafe_to_safe(self):
         runner = CliRunner()
-        result = runner.invoke(display_settings.show_role_mapping, args="--is-unsafe-to-safe")
+        result = runner.invoke(cli_commands.show_role_mapping, args="--is-unsafe-to-safe")
         print(result.stdout)
         self.assertEqual(
             result.stdout,
@@ -109,4 +107,42 @@ Admins will need to create these roles and map them to the appropriate backend_r
 'TLP:GREEN': 's-tlp-green'
 'TOP HIGH': 's-top-high'
 """,
+        )
+
+    def test_can_access(self):
+        runner = CliRunner()
+        # Basic assertions
+        result = runner.invoke(cli_commands.can_access, args=["LOW", "LOW"])
+        print(result.stdout)
+        self.assertEqual(
+            result.stdout,
+            "true\n",
+        )
+
+        result = runner.invoke(cli_commands.can_access, args=["MEDIUM", "MEDIUM"])
+        print(result.stdout)
+        self.assertEqual(
+            result.stdout,
+            "true\n",
+        )
+
+        result = runner.invoke(cli_commands.can_access, args=["LOW", "MEDIUM"])
+        print(result.stdout)
+        self.assertEqual(
+            result.stdout,
+            "false\n",
+        )
+
+        result = runner.invoke(cli_commands.can_access, args=["MEDIUM", "LOW"])
+        print(result.stdout)
+        self.assertEqual(
+            result.stdout,
+            "true\n",
+        )
+
+        result = runner.invoke(cli_commands.can_access, args=["MEDIUM", "LOW MOD1"])
+        print(result.stdout)
+        self.assertEqual(
+            result.stdout,
+            "false\n",
         )
