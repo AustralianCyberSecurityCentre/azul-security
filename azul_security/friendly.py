@@ -146,8 +146,6 @@ class SecurityFriendly:
             oth = set()
 
         has_releasability = len(inc) > 0
-        print(self._settings.labels.releasability.origin)
-        print(inc)
         origin = self._settings.labels.releasability.origin
         # Ignore origin when summarising a users access.
         if not ignore_origin:
