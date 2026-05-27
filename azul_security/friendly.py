@@ -266,7 +266,6 @@ class SecurityFriendly:
             )
 
         try:
-            print("inc", inc)
             ret = self.normalise(to_securityt(exc, inc, oth))
         except SecurityParseException as e:
             raise SecurityParseException(
