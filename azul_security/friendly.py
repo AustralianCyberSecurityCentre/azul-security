@@ -5,7 +5,8 @@ from typing import NamedTuple
 
 import cachetools
 from azul_bedrock.exception_enums import ExceptionCodeEnum
-from azul_bedrock.exceptions_security import SecurityParseException
+
+from azul_security import lazy_exception
 
 from azul_security.settings import Settings
 
@@ -108,7 +109,7 @@ class SecurityFriendly:
 
         bad_caveats = caveats.difference(residual_caveats)
         if not is_drop_bad_caveats and len(bad_caveats) > 0:
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Caveats '{bad_caveats}' are not compatible with the provided classification in the string '{clsfs}'.",
                 internal=ExceptionCodeEnum.SecurityClassificationIncompatibleCaveats,
                 parameters={"bad_caveats": bad_caveats, "clsfs": clsfs},
@@ -150,7 +151,7 @@ class SecurityFriendly:
         # Ignore origin when summarising a users access.
         if not ignore_origin:
             if inc and origin and origin not in inc:
-                raise SecurityParseException(
+                raise lazy_exception.lazy_raise_SecurityParseException(
                     ref=f"has releasability but does not have origin={origin}",
                     internal=ExceptionCodeEnum.SecurityMissingOrigin,
                     parameters={"origin": origin},
@@ -159,7 +160,7 @@ class SecurityFriendly:
         if not classification_allowed_rels and has_releasability:
             inclusive_string = ",".join(inc)
             exclusive_string = ",".join(exc)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Classifications '{exclusive_string}' have a releasability(s) {inclusive_string} but none of the classifications support releasability.",
                 internal=ExceptionCodeEnum.SecurityClassificationDoesntSupportReleasability,
                 parameters={"inclusive_string": inclusive_string, "exclusive_string": exclusive_string},
@@ -168,7 +169,7 @@ class SecurityFriendly:
         # check found groups are valid
         if not inc.issubset(self._all_releasability):
             bad_group = inc.difference(self._all_releasability)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"has invalid group in bad_group={bad_group}",
                 internal=ExceptionCodeEnum.SecurityInvalidReleasabilityGroup,
                 parameters={"bad_group": bad_group},
@@ -177,21 +178,21 @@ class SecurityFriendly:
         # check for bad entries
         if exc.difference(self._settings.exclusive):
             unregistered = exc.difference(self._settings.exclusive)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Unregistered security items 'exclusive': {unregistered}",
                 internal=ExceptionCodeEnum.SecurityInvalidExclusiveGroup,
                 parameters={"unregistered": unregistered},
             )
         if inc.difference(self._settings.inclusive):
             unregistered = inc.difference(self._settings.inclusive)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Unregistered security items 'inclusive': {unregistered}",
                 internal=ExceptionCodeEnum.SecurityInvalidInclusiveGroup,
                 parameters={"unregistered": unregistered},
             )
         if oth.difference(self._settings.markings):
             unregistered = oth.difference(self._settings.markings)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Unregistered security items 'markings': {unregistered}",
                 internal=ExceptionCodeEnum.SecurityInvalidMarkingsGroup,
                 parameters={"unregistered": unregistered},
@@ -232,7 +233,7 @@ class SecurityFriendly:
                 continue
 
         if len(exc) <= 0:
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"no classification in {raw_security}",
                 internal=ExceptionCodeEnum.SecurityNoClassificationInRawSecurity,
                 parameters={"raw_security": raw_security},
@@ -259,7 +260,7 @@ class SecurityFriendly:
         minimal = normalised.replace(" ", "")
         if minimal:
             normalised_clean_groups = normalised.strip()
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"invalid groups: {normalised_clean_groups}",
                 internal=ExceptionCodeEnum.SecurityInvalidGroupsWhileNormalising,
                 parameters={"normalised_clean_groups": normalised_clean_groups},
@@ -267,12 +268,15 @@ class SecurityFriendly:
 
         try:
             ret = self.normalise(to_securityt(exc, inc, oth))
-        except SecurityParseException as e:
-            raise SecurityParseException(
-                ref=f"{str(e)}: raw_security={raw_security}",
-                internal=ExceptionCodeEnum.SecurityInvalidSecurityStringWhileNormalising,
-                parameters={"inner_exception": str(e), "raw_security": raw_security},
-            ) from None
+        except Exception as e:
+            if lazy_exception.lazy_is_security_exception(e):
+                raise lazy_exception.lazy_raise_SecurityParseException(
+                    ref=f"{str(e)}: raw_security={raw_security}",
+                    internal=ExceptionCodeEnum.SecurityInvalidSecurityStringWhileNormalising,
+                    parameters={"inner_exception": str(e), "raw_security": raw_security},
+                ) from None
+            else:
+                raise
 
         return ret
 
@@ -301,7 +305,7 @@ class SecurityFriendly:
         inc = frozenset(new_inc)
         group_diff = inc.difference(self._all_releasability)
         if group_diff:
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"security has invalid groups: {group_diff}",
                 internal=ExceptionCodeEnum.SecurityInvalidReleasabilitiesConvertFromLabels,
                 parameters={"group_diff": group_diff},
@@ -316,7 +320,7 @@ class SecurityFriendly:
         if has_releasability and not is_allowed_rels:
             inclusive_string = ",".join(inc)
             exclusive_string = ",".join(exc)
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"Classifications '{exclusive_string}' have a releasability(s) {inclusive_string} but none of the classifications support releasability.",
                 internal=ExceptionCodeEnum.SecurityClassificationDoesntSupportReleasability,
                 parameters={"exclusive_string": exclusive_string, inclusive_string: "inclusive_string"},
@@ -333,7 +337,7 @@ class SecurityFriendly:
         # check that exclusive and markings were fully consumed
         for security_label in exc.union(oth):
             if security_label not in ret:
-                raise SecurityParseException(
+                raise lazy_exception.lazy_raise_SecurityParseException(
                     ref=f"security has invalid label {security_label}",
                     internal=ExceptionCodeEnum.SecurityInvalidLabelConvertingFromLabels,
                     parameters={"security_label": security_label},
