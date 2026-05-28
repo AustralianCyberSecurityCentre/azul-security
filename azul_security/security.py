@@ -21,8 +21,8 @@ from azul_bedrock.exceptions_security import (
 )
 from azul_bedrock.models_restapi.basic import UserSecurity
 
-from . import friendly, settings
-from .friendly import SecurityT, to_securityt
+from azul_security import friendly, settings
+from azul_security.friendly import SecurityT, to_securityt
 
 EXCLUSIVE = "exclusive"
 INCLUSIVE = "inclusive"

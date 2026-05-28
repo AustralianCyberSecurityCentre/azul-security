@@ -7,7 +7,7 @@ import cachetools
 from azul_bedrock.exception_enums import ExceptionCodeEnum
 from azul_bedrock.exceptions_security import SecurityParseException
 
-from .settings import Settings
+from azul_security.settings import Settings
 
 
 class SecurityT(NamedTuple):

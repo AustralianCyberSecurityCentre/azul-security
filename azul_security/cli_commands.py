@@ -5,9 +5,8 @@ import traceback
 import click
 from azul_bedrock.exceptions_security import SecurityParseException
 
+from azul_security import settings
 from azul_security.security import Security
-
-from . import settings
 
 
 @click.group()
