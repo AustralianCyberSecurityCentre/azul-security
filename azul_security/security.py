@@ -14,15 +14,10 @@ from typing import Iterable
 
 import cachetools
 from azul_bedrock.exception_enums import ExceptionCodeEnum
-from azul_bedrock.exceptions_security import (
-    SecurityAccessException,
-    SecurityConfigException,
-    SecurityParseException,
-)
-from azul_bedrock.models_restapi.basic import UserSecurity
+from azul_bedrock.models_restapi.security import UserSecurity
 
-from . import friendly, settings
-from .friendly import SecurityT, to_securityt
+from azul_security import friendly, lazy_exception, settings
+from azul_security.friendly import SecurityT, to_securityt
 
 EXCLUSIVE = "exclusive"
 INCLUSIVE = "inclusive"
@@ -53,7 +48,7 @@ class Security:
         self.minimum_required_access = frozenset(s.minimum_required_access)
         for x in self.minimum_required_access:
             if x not in s.exclusive and x not in s.inclusive:
-                raise SecurityConfigException(
+                raise lazy_exception.lazy_raise_SecurityConfigException(
                     ref=f"minimum required access level ({x}) not found in inclusive or exclusive sets",
                     internal=ExceptionCodeEnum.SecurityMinRequiredAccessNotFound,
                     parameters={"security_label": x},
@@ -61,7 +56,7 @@ class Security:
 
         # normalise default security
         if not s.default:
-            raise SecurityConfigException(
+            lazy_exception.lazy_raise_SecurityConfigException(
                 ref="must set security_default to valid security option",
                 internal=ExceptionCodeEnum.SecuritySecurityDefaultNotSet,
             )
@@ -143,7 +138,7 @@ class Security:
         inc = set.intersection(*inc_groups) if inc_groups else set()
         if inc_groups and not inc:
             # Occurs when two sets for the group have no common items - i.e. nobody can view the document
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"no common inclusive set: {inc}",
                 internal=ExceptionCodeEnum.SecurityNoCommonSecurityUnviewable,
                 parameters={"inclusive": inc},
@@ -209,7 +204,7 @@ class Security:
         if not sec.exclusive.issubset(permitted):
             if raise_error:
                 exclusive_difference = ",".join(sec.exclusive.difference(permitted))
-                raise SecurityAccessException(
+                raise lazy_exception.lazy_raise_SecurityAccessException(
                     ref=f"User cannot access all {exclusive_difference}",
                     internal=ExceptionCodeEnum.SecurityUserCannotAccessExclusive,
                     parameters={"exclusive_difference": exclusive_difference},
@@ -219,7 +214,7 @@ class Security:
         if sec.inclusive and not sec.inclusive.intersection(permitted):
             if raise_error:
                 inclusive_difference = ",".join(sec.inclusive)
-                raise SecurityAccessException(
+                raise lazy_exception.lazy_raise_SecurityAccessException(
                     ref=f"User cannot access any {inclusive_difference}",
                     internal=ExceptionCodeEnum.SecurityUserCannotAccessInclusive,
                     parameters={"inclusive_difference": inclusive_difference},
@@ -230,7 +225,7 @@ class Security:
         if objects_enforceable_markings and not objects_enforceable_markings.intersection(permitted):
             if raise_error:
                 markings_difference = ",".join(sec.markings)
-                raise SecurityAccessException(
+                raise lazy_exception.lazy_raise_SecurityAccessException(
                     ref=f"User cannot access any {markings_difference}",
                     internal=ExceptionCodeEnum.SecurityUserCannotAccessMarkings,
                     parameters={"markings_difference": markings_difference},
@@ -259,7 +254,7 @@ class Security:
         """
         ret = [self._s.safe_to_unsafe.get(x) for x in labels]
         if not drop_mismatch and None in ret:
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"unmatched safe->unsafe in {labels}",
                 internal=ExceptionCodeEnum.SecurityUnmatchedLabelsGoingSafeToUnsafe,
                 parameters={"labels": labels},
@@ -275,7 +270,7 @@ class Security:
         """
         ret = [self._s.unsafe_to_safe.get(x) for x in labels]
         if not drop_mismatch and None in ret:
-            raise SecurityParseException(
+            raise lazy_exception.lazy_raise_SecurityParseException(
                 ref=f"unmatched unsafe->safe in {labels}",
                 internal=ExceptionCodeEnum.SecurityUnmatchedLabelsGoingUnsafeToSafe,
                 parameters={"labels": labels},
@@ -301,7 +296,7 @@ class Security:
         missing = self.minimum_required_access.difference(calculated_labels)
         if missing:
             missing_labels = str(list(missing))
-            raise SecurityAccessException(
+            raise lazy_exception.lazy_raise_SecurityAccessException(
                 ref=f"user does not meet minimum_required_access, missing security labels {missing_labels}",
                 internal=ExceptionCodeEnum.SecurityUserDoesNotHaveMinimumAccess,
                 parameters={"missing_labels": missing_labels},

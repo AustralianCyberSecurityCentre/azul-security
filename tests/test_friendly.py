@@ -2,7 +2,7 @@ import unittest
 
 from azul_security import friendly, settings
 from azul_bedrock import exceptions_security
-from azul_security.friendly import SecurityT, to_securityt
+from azul_security.friendly import to_securityt
 
 from . import support
 

@@ -327,6 +327,26 @@ class TestBasic(unittest.TestCase):
         user_perm = "LOW TLP:AMBER+STRICT"
         self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
 
+        user_perm = "MEDIUM MOD1"
+        obj_perm = "MEDIUM MOD1"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        user_perm = "MEDIUM MOD1"
+        obj_perm = "LOW MOD1"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        user_perm = "MEDIUM MOD1 REL:APPLE"
+        obj_perm = "LOW MOD1"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        user_perm = "MEDIUM MOD1 REL:APPLE"
+        obj_perm = "MEDIUM MOD1 REL:APPLE"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
+        user_perm = "MEDIUM MOD1 REL:APPLE"
+        obj_perm = "MEDIUM MOD1 REL:APPLE,BEE"
+        self.assertTrue(self.sec.check_access_security(user_perm, obj_perm))
+
         # Alt origin should be allowed
         user_perm = "REL:APPLE MEDIUM"
         obj_perm = "REL:APPLEO MEDIUM"

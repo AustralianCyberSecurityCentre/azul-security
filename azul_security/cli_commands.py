@@ -3,11 +3,10 @@
 import traceback
 
 import click
-from azul_bedrock.exceptions_security import SecurityParseException
 
+from azul_security import settings
+from azul_security.lazy_exception import lazy_is_security_exception
 from azul_security.security import Security
-
-from . import settings
 
 
 @click.group()
@@ -73,9 +72,10 @@ def can_access(requestor_security: str, guarded_security: str):
             click.echo("true")
         else:
             click.echo("false")
-    except SecurityParseException as e:
-        click.echo("BadSecurity" + e.external)
-    except Exception:
+    except Exception as e:
+        if lazy_is_security_exception(e):
+            click.echo("BadSecurity" + e.external)
+            return
         click.echo(f"Failed with unexpected error\n{traceback.format_exc()}")
 
 
