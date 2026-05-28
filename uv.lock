@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [options]
-exclude-newer = "2026-05-21T06:38:31.320334133Z"
+exclude-newer = "2026-05-21T21:40:51.389428859Z"
 exclude-newer-span = "P1W"
 
 [options.exclude-newer-package]
@@ -80,6 +80,8 @@ source = { editable = "." }
 dependencies = [
     { name = "azul-bedrock" },
     { name = "cachetools" },
+    { name = "click" },
+    { name = "fastapi" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
@@ -98,6 +100,8 @@ dev = [
 requires-dist = [
     { name = "azul-bedrock", specifier = ">=11.0.110", index = "https://devpi.acsc.internal/azul/stable/" },
     { name = "cachetools", specifier = ">=7.0.0" },
+    { name = "click" },
+    { name = "fastapi" },
     { name = "pydantic", specifier = ">2" },
     { name = "pydantic-settings", specifier = ">2" },
 ]
