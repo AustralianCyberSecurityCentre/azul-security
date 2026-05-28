@@ -7,7 +7,6 @@ import cachetools
 from azul_bedrock.exception_enums import ExceptionCodeEnum
 
 from azul_security import lazy_exception
-
 from azul_security.settings import Settings
 
 

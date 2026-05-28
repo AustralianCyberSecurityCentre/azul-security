@@ -16,9 +16,7 @@ import cachetools
 from azul_bedrock.exception_enums import ExceptionCodeEnum
 from azul_bedrock.models_restapi.security import UserSecurity
 
-from azul_security import lazy_exception
-
-from azul_security import friendly, settings
+from azul_security import friendly, lazy_exception, settings
 from azul_security.friendly import SecurityT, to_securityt
 
 EXCLUSIVE = "exclusive"
