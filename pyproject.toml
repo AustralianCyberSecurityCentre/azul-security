@@ -24,10 +24,12 @@ classifiers=[
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "azul-bedrock>=11.0.110",
+    "azul-bedrock>=11.0.114",
     "cachetools>=7.0.0",
     "pydantic>2",
     "pydantic-settings>2",
+    "click",
+    "fastapi",
 ]
 
 [project.scripts]
