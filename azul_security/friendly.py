@@ -26,7 +26,7 @@ def to_securityt(exc, inc, oth):
 class SecurityFriendly:
     """Handle conversion to/from human readable security string."""
 
-    def __init__(self, settings: Settings) -> dict:
+    def __init__(self, settings: Settings) -> None:
         # cache conversion functions for speed
         self._cache_to_labels = cachetools.LRUCache(maxsize=1000)
         self._cache_from_labels = cachetools.LRUCache(maxsize=1000)
@@ -84,7 +84,7 @@ class SecurityFriendly:
             return ""
         return self._prefix + ",".join(sorted(x.replace(self._prefix, "") for x in split))
 
-    def is_classification_allowed_rels(self, exclusive: set[str]) -> bool:
+    def is_classification_allowed_rels(self, exclusive: set[str] | frozenset[str]) -> bool:
         """Check if the provided exclusive labels are allowed to have Releasability."""
         if len(exclusive) == 0:
             return True
@@ -115,7 +115,7 @@ class SecurityFriendly:
             )
         return exclusive.difference(bad_caveats)
 
-    def _minimise(self, items: frozenset[str], targets: list[str]) -> frozenset[str]:
+    def _minimise(self, items: frozenset[str] | set[str], targets: list[str] | frozenset[str]) -> frozenset[str]:
         """If there are multiple items in the intersection of 'items' and 'targets', keep last mentioned in 'targets'.
 
         Items not in targets are returned as-is.
@@ -127,11 +127,12 @@ class SecurityFriendly:
         highlander = set(targets) & items
         highest = None
         if highlander:
-            for mark in reversed(targets):
+            for mark in reversed(list(targets)):
                 if mark in highlander:
                     highest = mark
                     break
-            highlander.remove(highest)
+            if highest is not None:
+                highlander.remove(highest)
         items = items - highlander
         return frozenset(items)
 

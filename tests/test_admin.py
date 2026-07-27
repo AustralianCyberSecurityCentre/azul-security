@@ -18,7 +18,7 @@ class TestAdmin(unittest.TestCase):
         return super().setUp()
 
     @staticmethod
-    def _create_user_info(token_roles: list[str]) -> Request:
+    def _create_user_info(token_roles: list[str]) -> UserInfo:
         """Create a mock UserInfo."""
         return UserInfo(
             username="llama",
