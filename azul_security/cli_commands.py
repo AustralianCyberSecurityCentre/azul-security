@@ -74,7 +74,7 @@ def can_access(requestor_security: str, guarded_security: str):
             click.echo("false")
     except Exception as e:
         if lazy_is_security_exception(e):
-            click.echo("BadSecurity" + e.external)
+            click.echo("BadSecurity" + e.external)  # ty: ignore[unresolved-attribute] ty doesn't understand lazy_is_security_exception
             return
         click.echo(f"Failed with unexpected error\n{traceback.format_exc()}")
 

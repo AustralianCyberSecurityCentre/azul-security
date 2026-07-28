@@ -245,7 +245,7 @@ class Security:
         """Calculate a unique 'access' hash for a given list of valid labels for a user."""
         return md5(".".join(sorted(labels)))
 
-    def safe_to_unsafe(self, labels: list[str], drop_mismatch: bool = False) -> list[str]:
+    def safe_to_unsafe(self, labels: list[str] | frozenset[str], drop_mismatch: bool = False) -> list[str]:
         """Convert 'safe' labels into 'unsafe' labels, drop unmatched.
 
         e.g.
@@ -278,7 +278,7 @@ class Security:
         return [x for x in ret if x is not None]
 
     def summarise_user_access(
-        self, labels: list[str], denylist: list[str] = None, includelist: list[str] = None
+        self, labels: list[str], denylist: list[str] | None = None, includelist: list[str] | None = None
     ) -> UserSecurity:
         """Summarise the users access into a simple data structure."""
         if not denylist:
@@ -375,7 +375,7 @@ class Security:
         return ret
 
     @cachetools.cachedmethod(lambda self: self._cache_enforceable_markings, key=lambda _self, m: "-".join(sorted(m)))
-    def get_enforceable_markings(self, markings: list[str]) -> list[str]:
+    def get_enforceable_markings(self, markings: list[str] | frozenset[str]) -> list[str]:
         """Return the markings provided if they are an enforceable marking.
 
         If unsafe markings are provided they are returned in an unsafe format.
