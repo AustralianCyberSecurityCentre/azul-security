@@ -53,7 +53,7 @@ wheels = [
 
 [[package]]
 name = "azul-bedrock"
-version = "12.0.67"
+version = "12.0.70"
 source = { registry = "https://devpi.acsc.internal/azul/stable/" }
 dependencies = [
     { name = "babel" },
@@ -71,7 +71,7 @@ dependencies = [
     { name = "yara-x" },
 ]
 wheels = [
-    { url = "https://devpi.acsc.internal/azul/stable/+f/e8e/0ea8585bc64eb/azul_bedrock-12.0.67-py3-none-any.whl", hash = "sha256:e8e0ea8585bc64eb8c520a4f0593d918cf7ac72b1666d377e3f2b93a07ddf78d" },
+    { url = "https://devpi.acsc.internal/azul/stable/+f/0b4/3a14965eeaa90/azul_bedrock-12.0.70-py3-none-any.whl", hash = "sha256:0b43a14965eeaa90ef144dafc333c54b7c1e6fdc95a140ba4a2d855520360198" },
 ]
 
 [[package]]
