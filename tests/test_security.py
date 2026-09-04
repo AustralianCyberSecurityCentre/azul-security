@@ -517,6 +517,25 @@ class TestAnalog(unittest.TestCase):
         self.assertEqual(ret.max_access_display, "TOP HIGH REL:APPLE,CAR")
         self.assertEqual(ret.allowed_presets, ["TOP HIGH REL:APPLE,BEE,CAR"])
 
+    def test_convert_to_alternative_releasibility_to_security(self):
+        """Test security strings can be converted to the alternative origin releasability format."""
+
+        def still_equal(classification: str):
+            self.assertEqual(self.sec.convert_to_alternative_releasibility_to_security(classification), classification)
+
+        def new_value(classification: str, new_classification):
+            self.assertEqual(
+                self.sec.convert_to_alternative_releasibility_to_security(classification), new_classification
+            )
+
+        still_equal("MEDIUM")
+        still_equal("MEDIUM REL:APPLE,CAR")
+        still_equal("LOW")
+        still_equal("LOW TLP:CLEAR")
+        new_value("MEDIUM REL:APPLE", "MEDIUM REL:APPLEO")
+        new_value("HIGH REL:APPLE", "HIGH REL:APPLEO")
+        new_value("TOP HIGH REL:APPLE", "TOP HIGH REL:APPLEO")
+
     def test_summarise_higher_user_access_with_no_rels(self):
         """Test what happens if  user has high access but no RELs provided.
 
