@@ -359,20 +359,44 @@ class Security:
         ret.max_access_display = ret.max_access
 
         ret.allowed_presets = self._get_allowed_presets(calculated_labels)
+        # Convert max access to alternative releasability if possible.
+        ret.max_access_display = self._convert_to_alternative_releasibility_to_security(
+            ret.max_access, max_access_inclusive
+        )
+        return ret
 
+    def convert_to_alternative_releasibility_to_security(self, security: str) -> str:
+        """Convert a security string to use the alternative releasability.
+
+        e.g:
+        OFFICIAL REL:APPLE -> OFFICIAL REL:APPLEO
+        """
+        return self._convert_to_alternative_releasibility_to_security(security, None)
+
+    def _convert_to_alternative_releasibility_to_security(
+        self, security: str, inclusive_labels: list[str] | None = None
+    ) -> str:
+        """Convert a security string to use the alternative releasability.
+
+        optionally provide inclusive label overrides or the inclusive labels will be calculated from the security string.
+        e.g:
+        OFFICIAL REL:APPLE -> OFFICIAL REL:APPLEO
+        """
+        # If no security labels are provided
+        if inclusive_labels is None:
+            security_labels = self._friendly.to_labels(security)
+            inclusive_labels = list(security_labels.inclusive)
         if (
-            len(max_access_inclusive) == 1
-            and max_access_inclusive[0] == self._s.labels.releasability.origin
+            len(inclusive_labels) == 1
+            and inclusive_labels[0] == self._s.labels.releasability.origin
             and self._s.labels.releasability.origin_alt_name
         ):
-            updated_max_access = re.sub(
+            security = re.sub(
                 rf"{self._s.labels.releasability.prefix}[^ ]*",
                 f"{self._s.labels.releasability.prefix}{self._s.labels.releasability.origin_alt_name}",
-                ret.max_access,
+                security,
             )
-            # Update ret.max_access
-            ret.max_access_display = updated_max_access
-        return ret
+        return security
 
     @cachetools.cachedmethod(lambda self: self._cache_enforceable_markings, key=lambda _self, m: "-".join(sorted(m)))
     def get_enforceable_markings(self, markings: list[str] | frozenset[str]) -> list[str]:
