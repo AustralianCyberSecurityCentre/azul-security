@@ -2,7 +2,6 @@
 
 import re
 from collections import defaultdict
-from functools import cached_property
 from typing import Annotated
 
 from azul_bedrock.exception_enums import ExceptionCodeEnum
