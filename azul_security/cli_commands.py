@@ -17,25 +17,6 @@ def cli():
 
 @cli.command(
     help="""
-Display all of the Opensearch roles that need to be created for Azul's current security
-configuration to work with Opensearch.
-"""
-)
-def show_opensearch_roles():
-    """Console command to display the roles that need to be created in Opensearch."""
-    current_settings = settings.Settings()
-    render = current_settings.required_opensearch_roles
-    result = "The following roles must exist in Opensearch for Azul security to work:\n"
-    result += "\n".join(sorted(render))
-    result += (
-        "\nAdmins will need to create these roles and map them to "
-        + "the appropriate backend_role(s) provided by your OIDC system as needed."
-    )
-    click.echo(result)
-
-
-@cli.command(
-    help="""
 Display the mappings from the azul security configuration and how they map
 to/from the opensearch roles that need to be created.
 """
