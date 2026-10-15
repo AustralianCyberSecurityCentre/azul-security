@@ -2,7 +2,6 @@
 
 import re
 from collections import defaultdict
-from functools import cached_property
 from typing import Annotated
 
 from azul_bedrock.exception_enums import ExceptionCodeEnum
@@ -314,20 +313,3 @@ class Settings(BaseSettings):
     def classifications_that_allow_releasability(self) -> frozenset[str]:
         """List of classifications that are allowed to have releasibility."""
         return self._classifications_that_allow_rels
-
-    @cached_property
-    def required_opensearch_roles(self) -> list:
-        """Map unsafe to safe and add builtin opensearch specific mappings."""
-        copy_unsafe_to_safe = self._unsafe_to_safe.copy()
-        result = list(copy_unsafe_to_safe.values())
-        result.append("s-any")
-        result.append("azul_read")
-        result.append("azul_write")
-        # fillers to prevent Opensearch prevent SG 900D errors
-        result.append("azul-fill1")
-        result.append("azul-fill2")
-        result.append("azul-fill3")
-        result.append("azul-fill4")
-        result.append("azul-fill5")
-
-        return result

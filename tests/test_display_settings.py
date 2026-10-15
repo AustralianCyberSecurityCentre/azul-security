@@ -13,44 +13,6 @@ class TestDisplaySetting(unittest.TestCase):
         support.resetEnv()
         self.sec = se.Security()
 
-    def test_display_opensearch_roles_to_be_created(self):
-        runner = CliRunner()
-        result = runner.invoke(cli_commands.show_opensearch_roles)
-        print(result.stdout)
-        self.assertEqual(
-            result.stdout,
-            """The following roles must exist in Opensearch for Azul security to work:
-azul-fill1
-azul-fill2
-azul-fill3
-azul-fill4
-azul-fill5
-azul_read
-azul_write
-s-any
-s-hanoverlap
-s-high
-s-low
-s-low--ly
-s-medium
-s-mod1
-s-mod2
-s-mod3
-s-over
-s-rel-apple
-s-rel-bee
-s-rel-car
-s-restricted1
-s-restricted2
-s-tlp-amber
-s-tlp-amber-strict
-s-tlp-clear
-s-tlp-green
-s-top-high
-Admins will need to create these roles and map them to the appropriate backend_role(s) provided by your OIDC system as needed.
-""",
-        )
-
     def test_display_safe_to_unsafe(self):
         runner = CliRunner()
         result = runner.invoke(cli_commands.show_role_mapping)
