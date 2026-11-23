@@ -92,13 +92,13 @@ class LabelOptions(BaseModel):
 class LabelOptionsClassification(LabelOptions):
     """Label options list for all the classifications."""
 
-    options: list[LabelOptionClassification] = []  # ty:ignore[invalid-attribute-override]
+    options: list[LabelOptionClassification] = []  # ty:ignore[incompatible-attribute-override]
 
 
 class LabelOptionsCaveat(LabelOptions):
     """List of Caveats for the classification."""
 
-    options: list[LabelOptionCaveat] = []  # ty:ignore[invalid-attribute-override]
+    options: list[LabelOptionCaveat] = []  # ty:ignore[incompatible-attribute-override]
 
 
 class LabelOptionsReleasability(LabelOptions):
@@ -116,7 +116,7 @@ class LabelOptionsReleasability(LabelOptions):
 class LabelOptionsTlp(LabelOptions):
     """Label options for Tlps."""
 
-    options: list[LabelOptionTlp] = []  # ty:ignore[invalid-attribute-override]
+    options: list[LabelOptionTlp] = []  # ty:ignore[incompatible-attribute-override]
 
 
 class SecurityLabels(BaseModel):
